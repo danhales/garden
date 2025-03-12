@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found - G.A.R.D.E.N. Explorer{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 40px 0;">
+    <h2>404 - Page Not Found</h2>
+    <p>The page you were looking for doesn't exist.</p>
+    <p>
+        <a href="{{ url_for('index') }}" class="button">Return to Dashboard</a>
+    </p>
+</div>
+{% endblock %}

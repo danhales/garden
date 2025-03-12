@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}G.A.R.D.E.N. Explorer{% endblock %}</title>
+    <style>
+        /* Simple, clean styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .navigation {
+            margin-bottom: 20px;
+        }
+        .navigation a {
+            margin-right: 15px;
+        }
+        h1, h2, h3 {
+            color: #336633;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            color: #336633;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .flash.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .flash.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .flash.info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        .flash.warning {
+            background-color: #fff8e1;
+            color: #f57f17;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .property-table {
+            width: 100%;
+        }
+        .property-table th {
+            width: 30%;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-box input[type="text"] {
+            padding: 8px;
+            width: 300px;
+        }
+        .search-box button {
+            padding: 8px 15px;
+            background-color: #336633;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>G.A.R.D.E.N. Explorer</h1>
+            {% if session.username %}
+            <div>
+                Welcome, {{ session.display_name }} | 
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if session.username %}
+        <div class="navigation">
+            <a href="{{ url_for('index') }}">Dashboard</a> |
+            <a href="{{ url_for('schema_overview') }}">Schema</a> |
+            <a href="{{ url_for('search') }}">Search</a>
+        </div>
+        {% endif %}
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+        
+        <div class="footer">
+            G.A.R.D.E.N. Explorer | <a href="https://github.com/danhales/garden">GitHub</a>
+        </div>
+    </div>
+</body>
+</html>

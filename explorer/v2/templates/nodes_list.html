@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ label }} Nodes - G.A.R.D.E.N. Explorer{% endblock %}
+
+{% block content %}
+<h2>{{ label }} Nodes</h2>
+
+<p>Found {{ nodes|length }} nodes with label "{{ label }}"</p>
+
+{% if nodes %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            {% for prop in display_properties %}
+            <th>{{ prop }}</th>
+            {% endfor %}
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for node in nodes %}
+        <tr>
+            <td>{{ get_node_display_name(node) }}</td>
+            {% for prop in display_properties %}
+            <td>{{ format_property_value(node.props.get(prop)) }}</td>
+            {% endfor %}
+            <td>
+                <a href="{{ url_for('view_node', label=label, node_id=node.uuid) }}">View Details</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No nodes found with this label.</p>
+{% endif %}
+
+<div class="navigation">
+    <a href="{{ url_for('schema_overview') }}">&larr; Back to Schema</a> |
+    <a href="{{ url_for('index') }}">&larr; Back to Dashboard</a>
+</div>
+{% endblock %}

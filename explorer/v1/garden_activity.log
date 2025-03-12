@@ -1,0 +1,14 @@
+# timestamp|username|ip_address|method|endpoint|node_id|node_label
+2025-03-08T04:52:38.052757|demo|127.0.0.1|POST|/login||
+2025-03-08T04:52:38.060967|demo|127.0.0.1|GET|/||
+2025-03-08T04:58:51.977281|anonymous|127.0.0.1|POST|/login||
+2025-03-08T04:59:00.402866|demo|127.0.0.1|POST|/login||
+2025-03-08T04:59:00.416233|demo|127.0.0.1|GET|/||
+2025-03-08T05:13:32.644873|demo|127.0.0.1|POST|/login||
+2025-03-08T05:13:32.647832|demo|127.0.0.1|GET|/||
+2025-03-08T05:13:52.478806|demo|127.0.0.1|GET|/nodes/Category||Category
+2025-03-08T05:13:52.496300|demo|127.0.0.1|GET|/||
+2025-03-08T05:14:11.872517|demo|127.0.0.1|GET|/nodes/FinancialRecord||FinancialRecord
+2025-03-08T05:14:11.891997|demo|127.0.0.1|GET|/||
+2025-03-08T05:14:14.366650|demo|127.0.0.1|GET|/nodes/Movie||Movie
+2025-03-08T05:14:14.375288|demo|127.0.0.1|GET|/||

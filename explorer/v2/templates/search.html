@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Search - G.A.R.D.E.N. Explorer{% endblock %}
+
+{% block content %}
+<h2>Search</h2>
+
+<form action="{{ url_for('search') }}" method="get" class="search-box">
+    <input type="text" name="query" placeholder="Enter search term" value="{{ query or '' }}">
+    <button type="submit">Search</button>
+</form>
+
+{% if query %}
+<h3>Search Results for "{{ query }}"</h3>
+
+{% if not results or results|length == 0 %}
+<p>No results found.</p>
+{% else %}
+{% for label, nodes in results.items() %}
+<div class="card">
+    <h4>{{ label }} ({{ nodes|length }})</h4>
+    <ul>
+        {% for node in nodes %}
+        <li>
+            <a href="{{ url_for('view_node', label=label, node_id=node.uuid) }}">
+                {{ get_node_display_name(node) }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
+
+<div class="navigation">
+    <a href="{{ url_for('index') }}">&larr; Back to Dashboard</a>
+</div>
+{% endblock %}

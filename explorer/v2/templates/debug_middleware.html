@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Middleware Debug - G.A.R.D.E.N. Explorer{% endblock %}
+
+{% block content %}
+<h2>Middleware Structure Debug</h2>
+
+<div class="card">
+    <h3>Basic Information</h3>
+    <table class="property-table">
+        <tr>
+            <th>Has nodes attribute</th>
+            <td>{{ info.has_nodes_attr }}</td>
+        </tr>
+        <tr>
+            <th>Has edges attribute</th>
+            <td>{{ info.has_edges_attr }}</td>
+        </tr>
+        <tr>
+            <th>Has execute_query</th>
+            <td>{{ info.has_execute_query }}</td>
+        </tr>
+        <tr>
+            <th>Has METADATA</th>
+            <td>{{ info.has_metadata }}</td>
+        </tr>
+    </table>
+</div>
+
+{% if info.has_nodes_attr %}
+<div class="card">
+    <h3>Nodes Information</h3>
+    <p>Type: {{ info.types.nodes }}</p>
+    
+    {% if info.get('nodes_methods') %}
+    <h4>Available Methods</h4>
+    <ul>
+        {% for method in info.nodes_methods %}
+        <li>{{ method }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No methods found on nodes object</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if info.has_edges_attr %}
+<div class="card">
+    <h3>Edges Information</h3>
+    <p>Type: {{ info.types.edges }}</p>
+    
+    {% if info.get('edges_methods') %}
+    <h4>Available Methods</h4>
+    <ul>
+        {% for method in info.edges_methods %}
+        <li>{{ method }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No methods found on edges object</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if info.has_metadata and info.get('metadata_keys') %}
+<div class="card">
+    <h3>Metadata Keys</h3>
+    <ul>
+        {% for key in info.metadata_keys %}
+        <li>{{ key }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="card">
+    <h3>FOR AI ASSISTANTS</h3>
+    <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px;">
+{
+    "middleware_structure": {
+        "has_nodes_attr": {{ info.has_nodes_attr|tojson }},
+        "has_edges_attr": {{ info.has_edges_attr|tojson }},
+        "has_execute_query": {{ info.has_execute_query|tojson }},
+        "has_metadata": {{ info.has_metadata|tojson }},
+        "types": {{ info.types|tojson }},
+        {% if info.get('nodes_methods') %}
+        "nodes_methods": {{ info.nodes_methods|tojson }},
+        {% endif %}
+        {% if info.get('edges_methods') %}
+        "edges_methods": {{ info.edges_methods|tojson }},
+        {% endif %}
+        {% if info.has_metadata and info.get('metadata_keys') %}
+        "metadata_keys": {{ info.metadata_keys|tojson }},
+        {% endif %}
+        "access_pattern": {
+            "recommended": {% if info.has_nodes_attr and info.types.nodes != 'module' and info.types.nodes != 'function' %}"graph_db.nodes.method_name()"{% else %}"middleware.get_nodes_by_label('Label')"{% endif %},
+            "fallback": "middleware.get_nodes_by_label('Label')"
+        },
+        "common_issues": [
+            {% if not info.has_nodes_attr %}
+            "Missing 'nodes' attribute - middleware may be incorrectly generated",
+            {% endif %}
+            {% if not info.has_edges_attr %}
+            "Missing 'edges' attribute - relationship queries may fail",
+            {% endif %}
+            {% if not info.has_metadata %}
+            "Missing 'METADATA' - schema information unavailable",
+            {% endif %}
+            {% if info.has_nodes_attr and not info.get('nodes_methods') %}
+            "Nodes object has no methods - cannot query by label",
+            {% endif %}
+            {% if info.has_nodes_attr and info.types.nodes == 'function' %}
+            "Nodes is a function rather than a class instance - use graph_db.nodes().method_name()",
+            {% endif %}
+            {% if info.has_nodes_attr and info.types.nodes == 'module' %}
+            "Nodes is a module - direct access pattern needs to be determined",
+            {% endif %}
+        ],
+        "recommendations": [
+            {% if not info.has_nodes_attr or not info.has_edges_attr %}
+            "Use middleware adapter to abstract database access",
+            {% endif %}
+            {% if info.has_nodes_attr and info.types.nodes == 'function' %}
+            "Update access pattern to call nodes() first, then method",
+            {% endif %}
+            {% if not info.has_metadata %}
+            "Regenerate middleware with latest Module Generator",
+            {% endif %}
+        ]
+    },
+    "troubleshooting_tips": [
+        "Check middleware generation parameters",
+        "Verify Neo4j database structure matches expected schema",
+        "Ensure Module Generator version is compatible with G.A.R.D.E.N. Explorer",
+        "Use middleware adapter for resilient database access"
+    ],
+    "code_patterns": {
+        {% if info.has_nodes_attr and info.types.nodes == 'instance' %}
+        "get_movie_nodes": "graph_db.nodes.movie()",
+        "get_movie_by_id": "graph_db.nodes.movie(uuid='movie_id')",
+        {% else %}
+        "get_movie_nodes": "middleware.get_nodes_by_label('Movie')",
+        "get_movie_by_id": "middleware.get_node_by_id('Movie', 'movie_id')",
+        {% endif %}
+        "get_relationships": "middleware.get_outgoing_relationships('node_id')"
+    },
+    "fix_error_params_not_supported": "The error 'Parameters of type Nodes are not supported' occurs when trying to call methods on nodes as if it were an object when it's actually a different type. Use the middleware adapter pattern to abstract access."
+}
+</pre>
+</div>
+
+<div class="navigation">
+    <a href="{{ url_for('index') }}">&larr; Back to Dashboard</a>
+</div>
+{% endblock %}

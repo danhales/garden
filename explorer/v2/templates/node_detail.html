@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ get_node_display_name(node) }} - G.A.R.D.E.N. Explorer{% endblock %}
+
+{% block content %}
+<h2>{{ get_node_display_name(node) }}</h2>
+
+<div class="navigation">
+    <a href="{{ url_for('list_nodes', label=label) }}">&larr; Back to {{ label }} Nodes</a> |
+    <a href="{{ url_for('index') }}">&larr; Back to Dashboard</a>
+</div>
+
+<!-- Node Properties -->
+<div class="card">
+    <h3>Properties</h3>
+    <table class="property-table">
+        <tbody>
+            {% for key, value in node.props.items() %}
+            <tr>
+                <th>{{ key }}</th>
+                <td>{{ format_property_value(value) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Outgoing Relationships -->
+{% if outgoing_relationships %}
+<div class="card">
+    <h3>Outgoing Relationships ({{ outgoing_relationships|length }})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Relationship</th>
+                <th>To</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for relationship in outgoing_relationships %}
+            <tr>
+                <td>{{ get_relationship_display(relationship) }}</td>
+                <td>
+                    {{ get_node_display_name(relationship.target) }}
+                </td>
+                <td>
+                    <a href="{{ url_for('view_node', label=relationship.target.labels[0], node_id=relationship.target.uuid) }}">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Incoming Relationships -->
+{% if incoming_relationships %}
+<div class="card">
+    <h3>Incoming Relationships ({{ incoming_relationships|length }})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>From</th>
+                <th>Relationship</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for relationship in incoming_relationships %}
+            <tr>
+                <td>
+                    {{ get_node_display_name(relationship.source) }}
+                </td>
+                <td>{{ get_relationship_display(relationship) }}</td>
+                <td>
+                    <a href="{{ url_for('view_node', label=relationship.source.labels[0], node_id=relationship.source.uuid) }}">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

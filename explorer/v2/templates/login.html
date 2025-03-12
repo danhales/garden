@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - G.A.R.D.E.N. Explorer{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+
+{% if error %}
+<div class="flash error">{{ error }}</div>
+{% endif %}
+
+<div class="card">
+    <form method="post">
+        <div style="margin-bottom: 15px;">
+            <label for="username" style="display: block; margin-bottom: 5px;">Username:</label>
+            <input type="text" id="username" name="username" style="width: 100%; padding: 8px;" required>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="password" style="display: block; margin-bottom: 5px;">Password:</label>
+            <input type="password" id="password" name="password" style="width: 100%; padding: 8px;" required>
+        </div>
+        
+        <button type="submit" style="padding: 8px 15px; background-color: #336633; color: white; border: none; cursor: pointer;">Login</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Demo Credentials</h3>
+    <p>Use the following credentials to log in:</p>
+    <ul>
+        <li><strong>Username:</strong> demo</li>
+        <li><strong>Password:</strong> demo123</li>
+    </ul>
+</div>
+{% endblock %}
