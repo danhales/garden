@@ -1,8 +1,11 @@
-# pathfinder/__init__.py - Add this content
+import os 
+import sys 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from pathlib import Path as PathLib
-from .core.models import PathRoute  # Renamed to avoid collision
-from .core.managers import ContextManager
-from .ui.themes import ThemeManager
+from core.models import PathRoute  # Renamed to avoid collision
+from core.managers import ContextManager
+from ui.themes import ThemeManager
 
 # Create our main class
 class Pathfinder:

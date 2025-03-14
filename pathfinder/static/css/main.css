@@ -1,0 +1,99 @@
+/* Basic layout styling */
+.app-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1rem;
+    margin: 1rem;
+}
+
+.panel-section {
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pathfinder-context {
+    background-color: #fff;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.pathfinder-context:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.pathfinder-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.pathfinder-button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Theme styling */
+.theme-option {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.theme-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Navigation */
+.navigation-links {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.navigation-links a {
+    color: #333;
+    text-decoration: none;
+    padding: 0.5rem;
+}
+
+.navigation-links a:hover {
+    text-decoration: underline;
+}

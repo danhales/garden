@@ -2,6 +2,7 @@
 Flask application factory for Pathfinder
 """
 
+import sys
 import os
 import json
 import logging
@@ -17,13 +18,13 @@ def create_app(config: Optional[Dict[str, Any]] = None):
     """
     # Import Flask here to avoid requiring it for non-web usage
     try:
-        from flask import Flask, Blueprint, request, jsonify, render_template_string, send_from_directory
+        from flask import Flask, Blueprint, request, jsonify, render_template, send_from_directory
     except ImportError:
         logger.error("Flask is not installed. Please install Flask to use the web application.")
         return None
     
     # Create and configure the app
-    app = Flask(__name__, static_folder='static')
+    app = Flask(__name__, static_folder='static', template_folder='templates')
     
     # Apply default configuration
     app.config.update({
@@ -39,7 +40,8 @@ def create_app(config: Optional[Dict[str, Any]] = None):
         app.config.update(config)
     
     # Initialize Pathfinder
-    from . import Pathfinder
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    from __init__ import Pathfinder
     pathfinder = Pathfinder(
         neo4j_uri=app.config['PATHFINDER_NEO4J_URI'],
         username=app.config['PATHFINDER_NEO4J_USER'],
@@ -52,7 +54,7 @@ def create_app(config: Optional[Dict[str, Any]] = None):
     theme_manager = pathfinder.theme_manager
     
     # Import the accessibility helper
-    from .ui.accessibility import AccessibilityHelper
+    from ui.accessibility import AccessibilityHelper
     
     # Create a blueprint
     bp = Blueprint('pathfinder', __name__, url_prefix='/pathfinder')
@@ -64,388 +66,8 @@ def create_app(config: Optional[Dict[str, Any]] = None):
         theme = theme_manager.get_current_theme()
         css = theme["css"]
         
-        # Basic HTML template with accessibility features
-        html = """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Pathfinder - Context-Aware Graph Navigation</title>
-            <style>{{ css }}</style>
-        </head>
-        <body class="pathfinder-container">
-            <!-- Skip link for keyboard navigation -->
-            <a href="#main-content" class="skip-link">Skip to main content</a>
-            
-            <header role="banner">
-                <h1 class="pathfinder-header">Pathfinder</h1>
-                <div role="navigation" aria-label="Main navigation">
-                    <div class="navigation-links">
-                        <a href="#contexts">Contexts</a>
-                        <a href="#visualization">Visualization</a>
-                        <a href="#focus-panel">Focus Panel</a>
-                    </div>
-                </div>
-            </header>
-            
-            <main id="main-content" role="main">
-                <div id="loading" aria-live="polite">Loading Pathfinder...</div>
-                
-                <div id="app" style="display: none;">
-                    <div class="app-layout">
-                        <!-- Left panel -->
-                        <section id="contexts" aria-label="Contexts" class="panel-section">
-                            <h2>Contexts</h2>
-                            <div id="context-list" role="list" aria-label="Available contexts"></div>
-                        </section>
-                        
-                        <!-- Main panel -->
-                        <section id="visualization" aria-label="Graph visualization" class="main-panel">
-                            <h2>Visualization</h2>
-                            <div id="graph-container" role="img" aria-label="Graph visualization"></div>
-                            <div id="graph-description" class="sr-only" aria-live="polite"></div>
-                        </section>
-                        
-                        <!-- Right panel -->
-                        <section id="focus-panel" aria-label="Focus panel" class="panel-section">
-                            <h2>Focus Items</h2>
-                            <div id="focus-list" role="list" aria-label="Focus nodes"></div>
-                        </section>
-                    </div>
-                    
-                    <!-- Path controls -->
-                    <div id="path-controls" role="region" aria-label="Path recording controls">
-                        <h2>Path Recording</h2>
-                        <div id="path-buttons" role="toolbar" aria-label="Recording controls"></div>
-                    </div>
-                </div>
-            </main>
-            
-            <footer role="contentinfo">
-                <div id="theme-controls">
-                    <h2>Theme Selection</h2>
-                    <div id="theme-selector" role="radiogroup" aria-label="Theme selection"></div>
-                    
-                    <div class="theme-buttons">
-                        <button id="focus-theme-btn" class="pathfinder-button" aria-label="Data focus theme">
-                            Data Focus Mode
-                        </button>
-                        <button id="low-contrast-theme-btn" class="pathfinder-button" aria-label="Low contrast theme">
-                            Low Contrast Mode
-                        </button>
-                        <button id="high-contrast-theme-btn" class="pathfinder-button" aria-label="High contrast theme">
-                            High Contrast
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="accessibility-info">
-                    <h2>Accessibility</h2>
-                    <p>Pathfinder is designed to be accessible to all users, including screen reader users and those with sensory sensitivities.</p>
-                    <button id="toggle-sr-descriptions" class="pathfinder-button" aria-label="Toggle screen reader descriptions">
-                        Toggle Descriptions
-                    </button>
-                </div>
-            </footer>
-            
-            <script>
-            // Basic script to toggle between loading and app display
-            document.addEventListener('DOMContentLoaded', function() {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-                
-                // Add responsive layout classes
-                document.querySelector('.app-layout').classList.add('responsive-layout');
-                
-                // Fetch app data and contexts
-                fetchData();
-                
-                // Setup theme buttons
-                document.getElementById('focus-theme-btn').addEventListener('click', function() {
-                    setTheme('focus');
-                });
-                
-                document.getElementById('low-contrast-theme-btn').addEventListener('click', function() {
-                    setTheme('low_contrast');
-                });
-                
-                document.getElementById('high-contrast-theme-btn').addEventListener('click', function() {
-                    setTheme('high_contrast_default');
-                });
-                
-                // Toggle screen reader descriptions
-                document.getElementById('toggle-sr-descriptions').addEventListener('click', function() {
-                    const description = document.getElementById('graph-description');
-                    if (description.classList.contains('sr-only')) {
-                        description.classList.remove('sr-only');
-                        this.textContent = 'Hide Descriptions';
-                    } else {
-                        description.classList.add('sr-only');
-                        this.textContent = 'Show Descriptions';
-                    }
-                });
-            });
-            
-            async function fetchData() {
-                try {
-                    // Fetch contexts
-                    const contextsResponse = await fetch('/pathfinder/contexts');
-                    const contextsData = await contextsResponse.json();
-                    renderContexts(contextsData.contexts || []);
-                    
-                    // Fetch themes
-                    const themesResponse = await fetch('/pathfinder/themes');
-                    const themesData = await themesResponse.json();
-                    renderThemes(themesData.themes || []);
-                    
-                    // Fetch current visualization if a context is active
-                    const infoResponse = await fetch('/pathfinder/info');
-                    const infoData = await infoResponse.json();
-                    
-                    if (infoData.current_context) {
-                        const vizResponse = await fetch(`/pathfinder/visualization?context_id=${infoData.current_context}`);
-                        const vizData = await vizResponse.json();
-                        renderVisualization(vizData);
-                    }
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                    document.getElementById('app').innerHTML = `<p>Error loading data: ${error.message}</p>`;
-                }
-            }
-            
-            function renderContexts(contexts) {
-                const contextList = document.getElementById('context-list');
-                contextList.innerHTML = '';
-                
-                contexts.forEach(context => {
-                    const contextItem = document.createElement('div');
-                    contextItem.className = `pathfinder-context ${context.is_current ? 'active' : 'inactive'}`;
-                    contextItem.setAttribute('role', 'listitem');
-                    contextItem.setAttribute('tabindex', '0');
-                    contextItem.setAttribute('aria-selected', context.is_current ? 'true' : 'false');
-                    contextItem.setAttribute('aria-label', `${context.name}: ${context.description}`);
-                    
-                    contextItem.innerHTML = `
-                        <h3>${context.name}</h3>
-                        <p>${context.description}</p>
-                        <p>${context.node_count || 0} nodes</p>
-                    `;
-                    
-                    contextItem.addEventListener('click', () => switchContext(context.id));
-                    contextItem.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            switchContext(context.id);
-                        }
-                    });
-                    
-                    contextList.appendChild(contextItem);
-                });
-                
-                // Add create new context button
-                const newBtn = document.createElement('button');
-                newBtn.className = 'pathfinder-button';
-                newBtn.textContent = 'New Context';
-                newBtn.setAttribute('aria-label', 'Create new context');
-                newBtn.addEventListener('click', createNewContext);
-                
-                contextList.appendChild(newBtn);
-            }
-            
-            function renderThemes(themes) {
-                const themeSelector = document.getElementById('theme-selector');
-                themeSelector.innerHTML = '';
-                
-                themes.forEach(theme => {
-                    const themeItem = document.createElement('div');
-                    themeItem.className = `theme-option ${theme.is_current ? 'current' : ''}`;
-                    
-                    const radio = document.createElement('input');
-                    radio.type = 'radio';
-                    radio.name = 'theme';
-                    radio.id = `theme-${theme.name}`;
-                    radio.value = theme.name;
-                    radio.checked = theme.is_current;
-                    radio.setAttribute('aria-label', `Switch to theme: ${theme.description}`);
-                    
-                    const label = document.createElement('label');
-                    label.htmlFor = `theme-${theme.name}`;
-                    label.textContent = theme.name.replace(/_/g, ' ');
-                    
-                    themeItem.appendChild(radio);
-                    themeItem.appendChild(label);
-                    
-                    radio.addEventListener('change', () => {
-                        if (radio.checked) {
-                            setTheme(theme.name);
-                        }
-                    });
-                    
-                    themeSelector.appendChild(themeItem);
-                });
-            }
-            
-            function renderVisualization(vizData) {
-                const graphContainer = document.getElementById('graph-container');
-                graphContainer.innerHTML = '<p>Graph visualization would render here</p>';
-                
-                // Update screen reader description
-                const description = document.getElementById('graph-description');
-                description.textContent = vizData.screen_reader_description || 
-                    vizData.context.accessibility_description || 
-                    `Context ${vizData.context.name} with ${vizData.nodes.length} nodes and ${vizData.links.length} links`;
-                
-                // Render focus items
-                renderFocusItems(vizData);
-            }
-            
-            function renderFocusItems(vizData) {
-                const focusList = document.getElementById('focus-list');
-                focusList.innerHTML = '';
-                
-                // Get focus nodes
-                const focusNodeIds = vizData.context.focus_nodes || [];
-                const focusNodes = vizData.nodes.filter(node => focusNodeIds.includes(node.id));
-                
-                if (focusNodes.length === 0) {
-                    focusList.innerHTML = '<p>No focus items</p>';
-                    return;
-                }
-                
-                // Sort by priority
-                focusNodes.sort((a, b) => b.priority - a.priority);
-                
-                focusNodes.forEach(node => {
-                    const focusItem = document.createElement('div');
-                    focusItem.className = 'focus-item';
-                    focusItem.setAttribute('role', 'listitem');
-                    focusItem.setAttribute('tabindex', '0');
-                    focusItem.setAttribute('aria-label', node.aria_label || node.name);
-                    
-                    focusItem.innerHTML = `
-                        <h3>${node.name}</h3>
-                        <p>Priority: ${node.priority.toFixed(2)}</p>
-                    `;
-                    
-                    focusList.appendChild(focusItem);
-                });
-            }
-            
-            // API interaction functions
-            async function switchContext(contextId) {
-                try {
-                    const response = await fetch(`/pathfinder/contexts/switch/${contextId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        // Refresh the UI
-                        fetchData();
-                    } else {
-                        console.error('Error switching context');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            }
-            
-            async function createNewContext() {
-                const name = prompt('Enter context name:');
-                if (!name) return;
-                
-                const description = prompt('Enter context description:');
-                
-                try {
-                    const response = await fetch('/pathfinder/contexts', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            name,
-                            description: description || ''
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        // Refresh the UI
-                        fetchData();
-                    } else {
-                        console.error('Error creating context');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            }
-            
-            async function setTheme(themeName) {
-                try {
-                    const response = await fetch(`/pathfinder/themes/set/${themeName}`, {
-                        method: 'POST'
-                    });
-                    
-                    if (response.ok) {
-                        // Refresh the page to apply the theme
-                        window.location.reload();
-                    } else {
-                        console.error('Error setting theme');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            }
-            </script>
-            
-            <style>
-            /* Responsive layout */
-            .responsive-layout {
-                display: grid;
-                grid-template-columns: 1fr 2fr 1fr;
-                gap: 1rem;
-            }
-            
-            @media (max-width: 1024px) {
-                .responsive-layout {
-                    grid-template-columns: 1fr 2fr;
-                }
-                
-                #focus-panel {
-                    grid-column: 1 / -1;
-                }
-            }
-            
-            @media (max-width: 768px) {
-                .responsive-layout {
-                    grid-template-columns: 1fr;
-                }
-                
-                .panel-section, .main-panel {
-                    grid-column: 1;
-                }
-            }
-            
-            /* Ensure spacing between elements */
-            .panel-section, .main-panel {
-                margin-bottom: 2rem;
-            }
-            
-            /* Theme buttons */
-            .theme-buttons {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-                margin-top: 1rem;
-            }
-            </style>
-        </body>
-        </html>
-        """
-        
         # Render the template
-        return render_template_string(html, css=css)
+        return render_template('index.html', css=css)
     
     # Add API routes
     @bp.route('/info', methods=['GET'])
@@ -490,6 +112,10 @@ def create_app(config: Optional[Dict[str, Any]] = None):
             name=data.get('name', 'New Context'),
             description=data.get('description', '')
         )
+
+        # Save data after creating context
+        context_manager.save_data()
+
         return jsonify({
             "id": context.id,
             "name": context.name,
@@ -529,6 +155,61 @@ def create_app(config: Optional[Dict[str, Any]] = None):
             "name": context.name,
             "message": f"Switched to context: {context.name}"
         })
+    
+    @bp.route('/contexts/focus/<node_id>', methods=['POST'])
+    def focus_node(node_id):
+        """Add a node to the focus list in the current context"""
+        if not context_manager.current_context_id:
+            return jsonify({"error": "No active context"}), 400
+            
+        context = context_manager.contexts[context_manager.current_context_id]
+        if node_id not in context.nodes:
+            return jsonify({"error": "Node not found in current context"}), 404
+            
+        # Add to focus nodes if not already there
+        if node_id not in context.focus_nodes:
+            context.focus_nodes.append(node_id)
+            context_manager.save_data()
+        
+        return jsonify({"message": f"Node {node_id} added to focus"})
+    
+    @bp.route('/test-data', methods=['POST'])
+    def create_test_data():
+        """Create some test data for visualization"""
+        if not context_manager.current_context_id:
+            return jsonify({"error": "No active context"}), 400
+            
+        context = context_manager.contexts[context_manager.current_context_id]
+        
+        # Create sample nodes
+        nodes = []
+        for i in range(5):
+            node_id = str(uuid.uuid4())
+            node = ContextualNode(
+                uuid=node_id,
+                labels=["TestNode"],
+                properties={"name": f"Node {i+1}", "value": i*10}
+            )
+            context.add_node(node)
+            nodes.append(node_id)
+        
+        # Create relationships between nodes
+        for i in range(len(nodes)-1):
+            context.add_relationship(
+                source_id=nodes[i],
+                target_id=nodes[i+1],
+                rel_type="CONNECTS_TO"
+            )
+        
+        # Make a cycle
+        context.add_relationship(
+            source_id=nodes[-1],
+            target_id=nodes[0],
+            rel_type="CONNECTS_TO"
+        )
+        
+        context_manager.save_data()
+        return jsonify({"message": f"Created {len(nodes)} test nodes with relationships"})
     
     @bp.route('/visualization', methods=['GET'])
     def visualize():

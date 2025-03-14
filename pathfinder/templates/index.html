@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/responsive.css">
+{% endblock %}
+
+{% block content %}
+<div id="loading" aria-live="polite">Loading Pathfinder...</div>
+
+<div id="app" style="display: none;">
+    <div class="app-layout">
+        <!-- Left panel -->
+        <section id="contexts" aria-label="Contexts" class="panel-section">
+            <h2>Contexts</h2>
+            <div id="context-list" role="list" aria-label="Available contexts"></div>
+        </section>
+        
+        <!-- Main panel -->
+        <section id="visualization" aria-label="Graph visualization" class="main-panel">
+            <h2>Visualization</h2>
+            <div id="graph-container" role="img" aria-label="Graph visualization"></div>
+            <div id="graph-description" class="sr-only" aria-live="polite"></div>
+        </section>
+        
+        <!-- Right panel -->
+        <section id="focus-panel" aria-label="Focus panel" class="panel-section">
+            <h2>Focus Items</h2>
+            <div id="focus-list" role="list" aria-label="Focus nodes"></div>
+        </section>
+    </div>
+    
+    <!-- Path controls -->
+    <div id="path-controls" role="region" aria-label="Path recording controls">
+        <h2>Path Recording</h2>
+        <div id="path-buttons" role="toolbar" aria-label="Recording controls"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Basic script to toggle between loading and app display
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    
+    // Add responsive layout classes
+    document.querySelector('.app-layout').classList.add('responsive-layout');
+    
+    // Fetch app data and contexts
+    fetchData();
+    
+    // Setup theme buttons
+    document.getElementById('focus-theme-btn').addEventListener('click', function() {
+        setTheme('focus');
+    });
+    
+    document.getElementById('low-contrast-theme-btn').addEventListener('click', function() {
+        setTheme('low_contrast');
+    });
+    
+    document.getElementById('high-contrast-theme-btn').addEventListener('click', function() {
+        setTheme('high_contrast_default');
+    });
+    
+    // Toggle screen reader descriptions
+    document.getElementById('toggle-sr-descriptions').addEventListener('click', function() {
+        const description = document.getElementById('graph-description');
+        if (description.classList.contains('sr-only')) {
+            description.classList.remove('sr-only');
+            this.textContent = 'Hide Descriptions';
+        } else {
+            description.classList.add('sr-only');
+            this.textContent = 'Show Descriptions';
+        }
+    });
+});
+
+async function fetchData() {
+    try {
+        // Fetch contexts
+        const contextsResponse = await fetch('/pathfinder/contexts');
+        const contextsData = await contextsResponse.json();
+        renderContexts(contextsData.contexts || []);
+        
+        // Fetch themes
+        const themesResponse = await fetch('/pathfinder/themes');
+        const themesData = await themesResponse.json();
+        renderThemes(themesData.themes || []);
+        
+        // Fetch current visualization if a context is active
+        const infoResponse = await fetch('/pathfinder/info');
+        const infoData = await infoResponse.json();
+        
+        if (infoData.current_context) {
+            const vizResponse = await fetch(`/pathfinder/visualization?context_id=${infoData.current_context}`);
+            const vizData = await vizResponse.json();
+            renderVisualization(vizData);
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        document.getElementById('app').innerHTML = `<p>Error loading data: ${error.message}</p>`;
+    }
+}
+
+function renderContexts(contexts) {
+    const contextList = document.getElementById('context-list');
+    contextList.innerHTML = '';
+    
+    contexts.forEach(context => {
+        const contextItem = document.createElement('div');
+        contextItem.className = `pathfinder-context ${context.is_current ? 'active' : 'inactive'}`;
+        contextItem.setAttribute('role', 'listitem');
+        contextItem.setAttribute('tabindex', '0');
+        contextItem.setAttribute('aria-selected', context.is_current ? 'true' : 'false');
+        contextItem.setAttribute('aria-label', `${context.name}: ${context.description}`);
+        
+        contextItem.innerHTML = `
+            <h3>${context.name}</h3>
+            <p>${context.description}</p>
+            <p>${context.node_count || 0} nodes</p>
+        `;
+        
+        contextItem.addEventListener('click', () => switchContext(context.id));
+        contextItem.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                switchContext(context.id);
+            }
+        });
+        
+        contextList.appendChild(contextItem);
+    });
+    
+    // Add create new context button
+    const newBtn = document.createElement('button');
+    newBtn.className = 'pathfinder-button';
+    newBtn.textContent = 'New Context';
+    newBtn.setAttribute('aria-label', 'Create new context');
+    newBtn.addEventListener('click', createNewContext);
+    
+    contextList.appendChild(newBtn);
+
+    // Add create test data button
+    const testDataBtn = document.createElement('button');
+    testDataBtn.className = 'pathfinder-button';
+    testDataBtn.textContent = 'Create Test Data';
+    testDataBtn.setAttribute('aria-label', 'Create test data');
+    testDataBtn.addEventListener('click', createTestData);
+
+    contextList.appendChild(testDataBtn);
+}
+
+function renderThemes(themes) {
+    const themeSelector = document.getElementById('theme-selector');
+    themeSelector.innerHTML = '';
+    
+    themes.forEach(theme => {
+        const themeItem = document.createElement('div');
+        themeItem.className = `theme-option ${theme.is_current ? 'current' : ''}`;
+        
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'theme';
+        radio.id = `theme-${theme.name}`;
+        radio.value = theme.name;
+        radio.checked = theme.is_current;
+        radio.setAttribute('aria-label', `Switch to theme: ${theme.description}`);
+        
+        const label = document.createElement('label');
+        label.htmlFor = `theme-${theme.name}`;
+        label.textContent = theme.name.replace(/_/g, ' ');
+        
+        themeItem.appendChild(radio);
+        themeItem.appendChild(label);
+        
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                setTheme(theme.name);
+            }
+        });
+        
+        themeSelector.appendChild(themeItem);
+    });
+}
+
+function renderVisualization(vizData) {
+    const graphContainer = document.getElementById('graph-container');
+    const width = graphContainer.clientWidth;
+    const height = 400;
+    
+    // Create SVG
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", width);
+    svg.setAttribute("height", height);
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    
+    // Clear previous visualization
+    graphContainer.innerHTML = '';
+    graphContainer.appendChild(svg);
+    
+    // No nodes case
+    if (!vizData.nodes.length) {
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", width / 2);
+        text.setAttribute("y", height / 2);
+        text.setAttribute("text-anchor", "middle");
+        text.textContent = "No data to visualize";
+        svg.appendChild(text);
+        return;
+    }
+    
+    // Simple force-directed layout
+    const nodes = vizData.nodes.map(node => ({
+        ...node,
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: node.size || 10
+    }));
+    
+    const links = vizData.links.map(link => ({
+        ...link,
+        source: nodes.find(n => n.id === link.source),
+        target: nodes.find(n => n.id === link.target)
+    }));
+    
+    // Draw links
+    links.forEach(link => {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", link.source.x);
+        line.setAttribute("y1", link.source.y);
+        line.setAttribute("x2", link.target.x);
+        line.setAttribute("y2", link.target.y);
+        line.setAttribute("stroke", "#999");
+        line.setAttribute("stroke-width", "1");
+        svg.appendChild(line);
+        
+        // Add relationship type as text
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const midX = (link.source.x + link.target.x) / 2;
+        const midY = (link.source.y + link.target.y) / 2;
+        text.setAttribute("x", midX);
+        text.setAttribute("y", midY);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "10px");
+        text.textContent = link.type;
+        svg.appendChild(text);
+    });
+    
+    // Draw nodes
+    nodes.forEach(node => {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", node.x);
+        circle.setAttribute("cy", node.y);
+        circle.setAttribute("r", node.radius);
+        circle.setAttribute("fill", node.color || "#3388aa");
+        circle.setAttribute("stroke", "#fff");
+        circle.setAttribute("stroke-width", "1.5");
+        
+        // Add data for accessibility
+        circle.setAttribute("aria-label", node.aria_label || node.name);
+        circle.setAttribute("tabindex", "0");
+        
+        // Add click handler
+        circle.addEventListener("click", () => highlightNode(node.id));
+        
+        svg.appendChild(circle);
+        
+        // Add node label
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", node.x);
+        text.setAttribute("y", node.y + node.radius + 12);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "12px");
+        text.textContent = node.name;
+        svg.appendChild(text);
+    });
+    
+    // Update screen reader description
+    const description = document.getElementById('graph-description');
+    description.textContent = vizData.screen_reader_description || 
+        vizData.context.accessibility_description || 
+        `Context ${vizData.context.name} with ${vizData.nodes.length} nodes and ${vizData.links.length} links`;
+    
+    // Render focus items
+    renderFocusItems(vizData);
+}
+
+function highlightNode(nodeId) {
+    // You can add code here to highlight a node when clicked
+    console.log(`Node clicked: ${nodeId}`);
+    
+    // Add to focus nodes
+    fetch(`/pathfinder/contexts/focus/${nodeId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            fetchData();
+        }
+    });
+}
+
+function renderFocusItems(vizData) {
+    const focusList = document.getElementById('focus-list');
+    focusList.innerHTML = '';
+    
+    // Get focus nodes
+    const focusNodeIds = vizData.context.focus_nodes || [];
+    const focusNodes = vizData.nodes.filter(node => focusNodeIds.includes(node.id));
+    
+    if (focusNodes.length === 0) {
+        focusList.innerHTML = '<p>No focus items</p>';
+        return;
+    }
+    
+    // Sort by priority
+    focusNodes.sort((a, b) => b.priority - a.priority);
+    
+    focusNodes.forEach(node => {
+        const focusItem = document.createElement('div');
+        focusItem.className = 'focus-item';
+        focusItem.setAttribute('role', 'listitem');
+        focusItem.setAttribute('tabindex', '0');
+        focusItem.setAttribute('aria-label', node.aria_label || node.name);
+        
+        focusItem.innerHTML = `
+            <h3>${node.name}</h3>
+            <p>Priority: ${node.priority.toFixed(2)}</p>
+        `;
+        
+        focusList.appendChild(focusItem);
+    });
+}
+
+// API interaction functions
+async function switchContext(contextId) {
+    try {
+        const response = await fetch(`/pathfinder/contexts/switch/${contextId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            // Refresh the UI
+            fetchData();
+        } else {
+            console.error('Error switching context');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function createNewContext() {
+    const name = prompt('Enter context name:');
+    if (!name) return;
+    
+    const description = prompt('Enter context description:');
+    
+    try {
+        const response = await fetch('/pathfinder/contexts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                description: description || ''
+            })
+        });
+        
+        if (response.ok) {
+            // Refresh the UI
+            fetchData();
+        } else {
+            console.error('Error creating context');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function setTheme(themeName) {
+    try {
+        const response = await fetch(`/pathfinder/themes/set/${themeName}`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            // Refresh the page to apply the theme
+            window.location.reload();
+        } else {
+            console.error('Error setting theme');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function createTestData() {
+    try {
+        const response = await fetch('/pathfinder/test-data', {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            alert('Test data created successfully');
+            fetchData();
+        } else {
+            alert('Error creating test data');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+</script>
+
+<style>
+/* Responsive layout */
+.responsive-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .responsive-layout {
+        grid-template-columns: 1fr 2fr;
+    }
+    
+    #focus-panel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .responsive-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .panel-section, .main-panel {
+        grid-column: 1;
+    }
+}
+
+/* Ensure spacing between elements */
+.panel-section, .main-panel {
+    margin-bottom: 2rem;
+}
+
+/* Theme buttons */
+.theme-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}

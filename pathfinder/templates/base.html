@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pathfinder - Context-Aware Graph Navigation{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>{{ css|safe }}</style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="pathfinder-container">
+    <!-- Skip link for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <header role="banner">
+        <h1 class="pathfinder-header">Pathfinder</h1>
+        <div role="navigation" aria-label="Main navigation">
+            <div class="navigation-links">
+                <a href="#contexts">Contexts</a>
+                <a href="#visualization">Visualization</a>
+                <a href="#focus-panel">Focus Panel</a>
+            </div>
+        </div>
+    </header>
+    
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer role="contentinfo">
+        {% block footer %}
+        <div id="theme-controls">
+            <h2>Theme Selection</h2>
+            <div id="theme-selector" role="radiogroup" aria-label="Theme selection"></div>
+            
+            <div class="theme-buttons">
+                <button id="focus-theme-btn" class="pathfinder-button" aria-label="Data focus theme">
+                    Data Focus Mode
+                </button>
+                <button id="low-contrast-theme-btn" class="pathfinder-button" aria-label="Low contrast theme">
+                    Low Contrast Mode
+                </button>
+                <button id="high-contrast-theme-btn" class="pathfinder-button" aria-label="High contrast theme">
+                    High Contrast
+                </button>
+            </div>
+        </div>
+        
+        <div id="accessibility-info">
+            <h2>Accessibility</h2>
+            <p>Pathfinder is designed to be accessible to all users, including screen reader users and those with sensory sensitivities.</p>
+            <button id="toggle-sr-descriptions" class="pathfinder-button" aria-label="Toggle screen reader descriptions">
+                Toggle Descriptions
+            </button>
+        </div>
+        {% endblock %}
+    </footer>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

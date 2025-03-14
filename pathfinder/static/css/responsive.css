@@ -1,0 +1,41 @@
+/* responsive.css */
+
+/* Responsive layout */
+.responsive-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .responsive-layout {
+        grid-template-columns: 1fr 2fr;
+    }
+    
+    #focus-panel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .responsive-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .panel-section, .main-panel {
+        grid-column: 1;
+    }
+}
+
+/* Ensure spacing between elements */
+.panel-section, .main-panel {
+    margin-bottom: 2rem;
+}
+
+/* Theme buttons */
+.theme-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
