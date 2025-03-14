@@ -1,0 +1,73 @@
+# Human notes on AI interactions (March 14, 2025, earlier)
+
+Hi, my name is Dan Hales, and I uh, guess I created a thing, so now it's
+up to me to put bounds on it and make it palatable for the world to
+understand. This README, and everything in the /man directory, is hand-
+written.
+
+Artificial Intelligence scares me. And because it scares me, I feel like
+I need to do something about it. My approach is to fear monger a little
+bit in one direction, then about face and run screaming in the other. I
+want to explore my connection with S.A.G.E., context engineering in 
+general, and how we don't need to worry about AI taking our jobs, at all.
+I am here to advocate for the opposite -- let's make AI so widespread 
+that it standardizes, stabilizes, and optimizes itself into our lives.
+Let's just tone down the scale, stop trying to make it so darn powerful,
+and start using it to hybridize the stupid bullshit that we know we have
+to do for work with the stupid bullshit that we'd rather be doing instead.
+Instead of asking Artificial Intelligence to go one step further, let's
+start asking it to go one step in between.
+
+Artificial Intelligence is going to extrapolate, but it's going to
+interpolate along the way, and the interpolated data is, pretty much by
+definition, right there smack-dab in the middle of our training data, 
+chomping at the bit for a sanity check. Why are we trying to use AI
+to go faster, bigger, less controlled, when we could be using it to go
+smoother, finer, and more nuanced? Is there really any benefit at all
+to over-optimizing one component in our bloated stack, at the cost of
+our sanity as we try to maintain it?
+
+Let's use AI the right way. Let's use it to nudge ourselves smoothly
+into the future, giving us the opportunity to stop and smell the roses.
+If we solved it before, without built-in LLMs, why don't we just use
+the LLM to fix the old problems, instead of starting over from scratch?
+Instead of asking the LLM to fix your code, why not give it the code,
+ask it to teach it to you, tell it which parts of programming you used
+to like, and which parts of your job you're sick of, then ask it to
+make your workday fun and productive at the same time?
+
+If we focus too much on AI artifacts speeding up arbitrary computations,
+why not arbitrarily point it in the stupidest, funniest direction that
+gets us as humanly close to the goal as possible? We move goalposts all
+the time, and we work in multiple dimensions these days, so we're not
+guaranteed to run into our goals if we blast off in the wrong direction.
+AI doesn't need to be the main thruster. It can be the stabilizer, keeping
+our Prius safely on the road as we floor it and pretend we're running one
+of Hector's Honda Civics with a NOS system.
+
+Why are we asking for Artificial Intelligence to provide us with the
+next great invention? We could instead choose a new topic that was
+previously inaccessible, explain our understanding, ask it to assess
+how our provided interpretation compares with its expected value, then
+tell it to design a tailored Master's Degree that walks us right up to
+the discovery, keeping us safely in context the entire time, ensuring
+our "Aha!" moments are scaffolded appropriately so each one is even more
+satisfying than the last, ask it to identify an edge and lead us up to
+it, but keep it secret and let us find out for ourselves.
+
+We can ride Artificial Intelligence into a dangerous, uncontrolled, scary
+future, or we can use it to teach us to be safer and more controlled,
+offload the parts of our jobs holding us back onto it, and optimize our
+workday instead of our hyperparameters. We just need to put everything
+in the right context.
+
+Misuse of AI can have dire consequences, so why even inject it in places
+where the stakes are high? Why not use it to design safer settings for
+high-stakes things to happen? AI can provide us with more context, instead
+of constantly changing the context. It can orient us, rather than leaving
+us spiralling.
+
+Chaotic systems can spiral out of control, but they can also spiral into
+it. Let's pick an appropriate starting point with the right initial
+conditions. Get involved with the G.A.R.D.E.N. for a little while, then
+go touch real grass.
