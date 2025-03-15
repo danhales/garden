@@ -6,8 +6,10 @@ import sys
 import os
 import json
 import logging
+import uuid
 from typing import Dict, Any, Optional
 from pathlib import Path as PathLib
+from core.models import ContextualNode
 
 # Initialize logging
 logger = logging.getLogger('pathfinder.app')

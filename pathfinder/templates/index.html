@@ -342,11 +342,11 @@ async function switchContext(contextId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({})  // Empty JSON body
         });
         
         if (response.ok) {
-            // Refresh the UI
             fetchData();
         } else {
             console.error('Error switching context');
@@ -355,6 +355,7 @@ async function switchContext(contextId) {
         console.error('Error:', error);
     }
 }
+
 
 async function createNewContext() {
     const name = prompt('Enter context name:');
