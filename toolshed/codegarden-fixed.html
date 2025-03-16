@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌱 CodeGarden: Module Explorer</title>
+    <style>
+        /* Core styles */
+        :root {
+            --primary-color: #3a7561;
+            --secondary-color: #a2d5ab;
+            --tertiary-color: #e5efc1;
+            --background-color: #f9f9f9;
+            --text-color: #333;
+            --node-module: #3a7561;
+            --node-class: #2b6777;
+            --node-function: #c84b31;
+            --edge-color: #aaa;
+            --border-color: #ddd;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+        
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Input Panel */
+        #input-panel {
+            width: 40%;
+            padding: 20px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            height: 300px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        
+        /* Button Groups */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2d5d4d;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Visualization Panel */
+        #viz-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            padding: 10px 20px;
+            background-color: var(--tertiary-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Layout Options */
+        .layout-options {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .layout-option {
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: transparent;
+        }
+        
+        .layout-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Canvas Container */
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-color: var(--background-color);
+        }
+        
+        /* Nodes and Edges */
+        .node {
+            position: absolute;
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            user-select: none;
+            z-index: 10;
+        }
+        
+        .node:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .node.selected {
+            box-shadow: 0 0 0 3px #ffc107, 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .node-module { background-color: var(--node-module); }
+        .node-class { background-color: var(--node-class); }
+        .node-function { background-color: var(--node-function); }
+        
+        .edge {
+            position: absolute;
+            height: 2px;
+            background-color: var(--edge-color);
+            transform-origin: 0 0;
+            z-index: 5;
+        }
+        
+        .edge::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -3px;
+            border-left: 6px solid var(--edge-color);
+            border-top: 3px solid transparent;
+            border-bottom: 3px solid transparent;
+        }
+        
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+        
+        .module-color { background-color: var(--node-module); }
+        .class-color { background-color: var(--node-class); }
+        .function-color { background-color: var(--node-function); }
+        
+        /* Help Modal */
+        #help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .keyboard-shortcuts {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 8px 16px;
+            margin-top: 15px;
+        }
+        
+        .key {
+            background-color: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            text-align: center;
+        }
+        
+        /* Loading Indicator */
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 20px;
+            z-index: 100;
+            text-align: center;
+            min-width: 200px;
+            display: none;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(58, 117, 97, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+            
+            #input-panel {
+                width: 100%;
+                max-height: 50%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>
+            <span>🌱</span>
+            <span>CodeGarden: Module Explorer</span>
+        </h1>
+        <div>
+            <button id="help-btn" class="btn-secondary">Help</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Input Panel -->
+        <section id="input-panel">
+            <div class="form-group">
+                <label for="module-name">Module Name:</label>
+                <input type="text" id="module-name" value="example.py" placeholder="e.g., example.py">
+            </div>
+
+            <div class="form-group">
+                <label for="code-input">Python Code:</label>
+                <textarea id="code-input" placeholder="# Paste Python code here or load an example"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button id="analyze-btn" class="btn-primary">Analyze Module</button>
+                <button id="clear-btn" class="btn-secondary">Clear</button>
+            </div>
+
+            <div class="form-group">
+                <label for="example-select">Load Example:</label>
+                <select id="example-select">
+                    <option value="">-- Select Example --</option>
+                    <option value="simple">Simple Module</option>
+                    <option value="classes">Classes and Inheritance</option>
+                    <option value="complex">Complex Module Structure</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Visualization Panel -->
+        <section id="viz-panel">
+            <div class="toolbar">
+                <div class="layout-options">
+                    <div class="layout-option active" data-layout="hierarchical">Hierarchical</div>
+                    <div class="layout-option" data-layout="circular">Circular</div>
+                    <div class="layout-option" data-layout="force">Force-Directed</div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color module-color"></div>
+                        <span>Module</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color class-color"></div>
+                        <span>Class</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color function-color"></div>
+                        <span>Function</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="canvas-container">
+                <!-- Nodes and edges will be added here by JavaScript -->
+                <div id="canvas-tip" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #888; max-width: 400px;">
+                    <p>Enter Python code and click "Analyze Module" to visualize the structure.</p>
+                    <p>Click on nodes to view details in the browser console.</p>
+                    <p>Press 'H' for help with keyboard shortcuts.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator">
+        <div class="spinner"></div>
+        <p id="loading-message">Analyzing module...</p>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>CodeGarden Help</h2>
+            <p>Welcome to CodeGarden, an interactive tool for exploring Python module structure. This tool visualizes modules, classes, and functions as an interactive graph.</p>
+            
+            <h3>Getting Started</h3>
+            <ol>
+                <li>Enter your Python code in the text area or load an example</li>
+                <li>Click "Analyze Module" to generate the visualization</li>
+                <li>Explore the graph by clicking on nodes for details</li>
+                <li>Try different layouts using the options in the toolbar</li>
+            </ol>
+
+            <h3>Keyboard Shortcuts</h3>
+            <div class="keyboard-shortcuts">
+                <div class="key">H</div>
+                <div>Toggle help modal</div>
+                
+                <div class="key">Esc</div>
+                <div>Close active panel or modal</div>
+                
+                <div class="key">R</div>
+                <div>Reset view (center visualization)</div>
+                
+                <div class="key">↑/↓/←/→</div>
+                <div>Navigate between nodes</div>
+                
+                <div class="key">Enter</div>
+                <div>Show details for selected node</div>
+            </div>
+
+            <h3>About CodeGarden</h3>
+            <p>CodeGarden follows the G.A.R.D.E.N. philosophy and uses the META pattern (Metadata-Extraction-Template-Assembly) to create intuitive visualizations of complex code structures.</p>
+        </div>
+    </div>
+
+    <script>
+        // Core functionality in a simplified, fully-integrated script
+        (function() {
+            // Console utilities for safe console interactions
+            const ConsoleUtils = {
+                log: function(message) {
+                    console.log(message);
+                },
+                warn: function(message) {
+                    console.warn(message);
+                },
+                error: function(message) {
+                    console.error(message);
+                },
+                group: function(label) {
+                    if (typeof console.group === 'function') {
+                        console.group(label);
+                    } else {
+                        console.log(`=== ${label} ===`);
+                    }
+                },
+                groupEnd: function() {
+                    if (typeof console.groupEnd === 'function') {
+                        console.groupEnd();
+                    } else {
+                        console.log('=== End Group ===');
+                    }
+                }
+            };
+
+            // Main application components
+            const App = {
+                // DOM elements
+                elements: {
+                    codeInput: document.getElementById('code-input'),
+                    moduleName: document.getElementById('module-name'),
+                    analyzeBtn: document.getElementById('analyze-btn'),
+                    clearBtn: document.getElementById('clear-btn'),
+                    exampleSelect: document.getElementById('example-select'),
+                    layoutOptions: document.querySelectorAll('.layout-option'),
+                    canvas: document.getElementById('canvas-container'),
+                    helpModal: document.getElementById('help-modal'),
+                    helpBtn: document.getElementById('help-btn'),
+                    closeBtn: document.querySelector('.close-btn'),
+                    loadingIndicator: document.getElementById('loading-indicator'),
+                    loadingMessage: document.getElementById('loading-message'),
+                    canvasTip: document.getElementById('canvas-tip')
+                },
+                
+                // State
+                graph: {
+                    nodes: [],
+                    edges: [],
+                    selectedNode: null
+                },
+                
+                currentLayout: 'hierarchical',
+                
+                // Examples
+                examples: {
+                    simple: `"""
+A simple Python module with basic functions.
+"""
+
+def greet(name):
+    """Return a greeting message."""
+    return f"Hello, {name}!"
+
+def calculate_sum(numbers):
+    """Calculate the sum of a list of numbers."""
+    return sum(numbers)
+
+# A simple variable
+VERSION = "1.0.0"`,
+                    classes: `"""
+A module demonstrating classes and inheritance.
+"""
+
+class Animal:
+    """Base class for animals."""
+    
+    def __init__(self, name):
+        """Initialize with a name."""
+        self.name = name
+    
+    def speak(self):
+        """Make a sound."""
+        return "Some generic animal sound"
+
+class Dog(Animal):
+    """A dog is a type of animal."""
+    
+    def speak(self):
+        """Dogs bark."""
+        return "Woof!"
+    
+    def fetch(self, item):
+        """Fetch an item."""
+        return f"{self.name} fetched the {item}!"
+
+class Cat(Animal):
+    """A cat is a type of animal."""
+    
+    def speak(self):
+        """Cats meow."""
+        return "Meow!"
+    
+    def purr(self):
+        """Cats can purr."""
+        return f"{self.name} is purring..."
+
+def create_pet(name, pet_type):
+    """Factory function to create a pet."""
+    if pet_type.lower() == "dog":
+        return Dog(name)
+    elif pet_type.lower() == "cat":
+        return Cat(name)
+    else:
+        return Animal(name)`,
+                    complex: `"""
+A more complex module with various Python features.
+"""
+
+import os
+import sys
+import json
+from datetime import datetime
+from typing import Dict, List, Optional, Union
+
+class DataProcessor:
+    """Process data from various sources."""
+    
+    def __init__(self, config: Optional[Dict] = None):
+        """Initialize with optional configuration."""
+        self.config = config or {}
+        self.sources = []
+        self.last_run = None
+    
+    def add_source(self, source: str) -> bool:
+        """Add a data source."""
+        if source in self.sources:
+            return False
+        self.sources.append(source)
+        return True
+    
+    def process_all(self) -> List[Dict]:
+        """Process all data sources."""
+        results = []
+        for source in self.sources:
+            results.append(self.process_source(source))
+        self.last_run = datetime.now()
+        return results
+    
+    def process_source(self, source: str) -> Dict:
+        """Process a single data source."""
+        # Processing logic would go here
+        return {"source": source, "status": "processed"}
+
+class FileProcessor(DataProcessor):
+    """Specialized processor for file data."""
+    
+    def __init__(self, directory: str, config: Optional[Dict] = None):
+        """Initialize with directory and optional config."""
+        super().__init__(config)
+        self.directory = directory
+    
+    def scan_directory(self) -> List[str]:
+        """Scan the directory for files."""
+        if not os.path.exists(self.directory):
+            return []
+        return [f for f in os.listdir(self.directory) if os.path.isfile(os.path.join(self.directory, f))]
+    
+    def process_source(self, source: str) -> Dict:
+        """Override to handle file processing."""
+        file_path = os.path.join(self.directory, source)
+        if not os.path.exists(file_path):
+            return {"source": source, "status": "error", "message": "File not found"}
+        
+        # File processing logic would go here
+        return {"source": source, "status": "processed", "path": file_path}
+
+def configure_logging(level: str = "INFO") -> None:
+    """Configure logging for the application."""
+    # This would typically set up a logging configuration
+    print(f"Logging configured with level: {level}")
+
+def process_command_line_args(args: List[str]) -> Dict:
+    """Process command line arguments."""
+    options = {"verbose": False, "files": []}
+    
+    for arg in args:
+        if arg.startswith("--"):
+            options[arg[2:]] = True
+        elif arg.startswith("-"):
+            options[arg[1:]] = True
+        else:
+            options["files"].append(arg)
+    
+    return options
+
+def main() -> int:
+    """Main entry point for the application."""
+    options = process_command_line_args(sys.argv[1:])
+    
+    configure_logging("DEBUG" if options.get("verbose") else "INFO")
+    
+    processor = FileProcessor("./data")
+    
+    for file in options.get("files", []):
+        processor.add_source(file)
+    
+    results = processor.process_all()
+    
+    print(f"Processed {len(results)} files")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())`
+                },
+                
+                // Initialize the application
+                init: function() {
+                    this.setupEventListeners();
+                    this.loadExample('simple');
+                    console.log('🌱 CodeGarden initialized');
+                },
+                
+                // Set up event listeners
+                setupEventListeners: function() {
+                    // Explicitly reference App to maintain context
+                    const app = this;
+                    
+                    // Analyze button
+                    app.elements.analyzeBtn.addEventListener('click', function() {
+                        app.analyzeCode();
+                    });
+                    
+                    // Clear button
+                    app.elements.clearBtn.addEventListener('click', function() {
+                        app.clearCode();
+                    });
+                    
+                    // Example select
+                    app.elements.exampleSelect.addEventListener('change', function() {
+                        const example = this.value;
+                        if (example) {
+                            app.loadExample(example);
+                            this.value = ''; // Reset select
+                        }
+                    });
+                    
+                    // Layout options
+                    app.elements.layoutOptions.forEach(function(option) {
+                        option.addEventListener('click', function() {
+                            const layoutType = this.getAttribute('data-layout');
+                            app.changeLayout(layoutType);
+                        });
+                    });
+                    
+                    // Help modal
+                    app.elements.helpBtn.addEventListener('click', function() {
+                        app.toggleHelpModal();
+                    });
+                    
+                    app.elements.closeBtn.addEventListener('click', function() {
+                        app.toggleHelpModal();
+                    });
+                    
+                    // Node click
+                    app.elements.canvas.addEventListener('click', function(event) {
+                        if (event.target.classList.contains('node')) {
+                            const nodeId = event.target.getAttribute('data-id');
+                            app.selectNode(nodeId);
+                            app.showNodeDetails(nodeId);
+                        }
+                    });
+                    
+                    // Keyboard shortcuts
+                    document.addEventListener('keydown', function(event) {
+                        const key = event.key.toLowerCase();
+                        
+                        if (key === 'h') {
+                            app.toggleHelpModal();
+                        } else if (key === 'escape') {
+                            if (app.elements.helpModal.style.display === 'flex') {
+                                app.toggleHelpModal();
+                            }
+                        } else if (key === 'r') {
+                            app.resetView();
+                        }
+                    });
+                },
+                
+                // Load an example
+                loadExample: function(name) {
+                    const example = this.examples[name];
+                    if (example) {
+                        this.elements.codeInput.value = example;
+                        this.elements.moduleName.value = `${name}_example.py`;
+                        ConsoleUtils.log(`Loaded ${name} example`);
+                    }
+                },
+                
+                // Analyze the code
+                analyzeCode: function() {
+                    const code = this.elements.codeInput.value;
+                    const moduleName = this.elements.moduleName.value || 'example.py';
+                    
+                    if (!code.trim()) {
+                        alert('Please enter some Python code to analyze');
+                        return;
+                    }
+                    
+                    // Show loading indicator
+                    this.showLoading('Analyzing module...');
+                    
+                    // Use setTimeout to ensure the UI updates
+                    setTimeout(() => {
+                        try {
+                            // Parse the code
+                            const parseResult = this.parseModule(code, moduleName);
+                            
+                            // Render the graph
+                            this.renderGraph(parseResult, this.currentLayout);
+                            
+                            // Hide the canvas tip
+                            if (this.elements.canvasTip) {
+                                this.elements.canvasTip.style.display = 'none';
+                            }
+                            
+                            // Hide loading indicator
+                            this.hideLoading();
+                            
+                            ConsoleUtils.log(`Analysis complete: Found ${parseResult.nodes.length} nodes and ${parseResult.edges.length} edges`);
+                        } catch (error) {
+                            // Hide loading indicator and show error
+                            this.hideLoading();
+                            ConsoleUtils.error('Error analyzing code:');
+                            ConsoleUtils.error(error);
+                            alert('Error analyzing code: ' + error.message);
+                        }
+                    }, 50);
+                },
+                
+                // Show loading indicator
+                showLoading: function(message) {
+                    if (this.elements.loadingMessage) {
+                        this.elements.loadingMessage.textContent = message || 'Loading...';
+                    }
+                    
+                    if (this.elements.loadingIndicator) {
+                        this.elements.loadingIndicator.style.display = 'block';
+                    }
+                },
+                
+                // Hide loading indicator
+                hideLoading: function() {
+                    if (this.elements.loadingIndicator) {
+                        this.elements.loadingIndicator.style.display = 'none';
+                    }
+                },
+                
+                // Clear the code
+                clearCode: function() {
+                    if (confirm('Clear the current code and visualization?')) {
+                        this.elements.codeInput.value = '';
+                        this.elements.moduleName.value = 'example.py';
+                        this.clearGraph();
+                        ConsoleUtils.log('Input and visualization cleared');
+                    }
+                },
+                
+                // Change the layout
+                changeLayout: function(layoutType) {
+                    // Update active state
+                    this.elements.layoutOptions.forEach(option => {
+                        option.classList.remove('active');
+                        if (option.getAttribute('data-layout') === layoutType) {
+                            option.classList.add('active');
+                        }
+                    });
+                    
+                    // Apply layout if we have nodes
+                    if (this.graph.nodes.length > 0) {
+                        this.currentLayout = layoutType;
+                        this.applyLayout(layoutType);
+                        ConsoleUtils.log(`Changed to ${layoutType} layout`);
+                    }
+                },
+                
+                // Toggle help modal
+                toggleHelpModal: function() {
+                    const modal = this.elements.helpModal;
+                    modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+                },
+                
+                // Reset view
+                resetView: function() {
+                    if (this.graph.nodes.length > 0) {
+                        this.applyLayout(this.currentLayout);
+                        ConsoleUtils.log('View reset');
+                    }
+                },
+                
+                // Select a node
+                selectNode: function(nodeId) {
+                    // Clear previous selection
+                    if (this.graph.selectedNode) {
+                        const prevNode = this.getNodeById(this.graph.selectedNode);
+                        if (prevNode && prevNode.element) {
+                            prevNode.element.classList.remove('selected');
+                        }
+                    }
+                    
+                    // Set new selection
+                    this.graph.selectedNode = nodeId;
+                    
+                    // Apply selection styling
+                    if (nodeId) {
+                        const node = this.getNodeById(nodeId);
+                        if (node && node.element) {
+                            node.element.classList.add('selected');
+                            
+                            // Scroll into view if needed
+                            node.element.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center',
+                                inline: 'center'
+                            });
+                        }
+                    }
+                },
+                
+                // Show node details
+                showNodeDetails: function(nodeId) {
+                    const node = this.getNodeById(nodeId);
+                    if (!node) return;
+                    
+                    try {
+                        ConsoleUtils.group(`Node: ${node.label} (${node.type})`);
+                        
+                        // Basic node info
+                        ConsoleUtils.log(`Type: ${node.type}`);
+                        ConsoleUtils.log(`Label: ${node.label}`);
+                        
+                        // Additional data
+                        if (node.data) {
+                            if (node.data.docstring) {
+                                ConsoleUtils.log(`Docstring: ${node.data.docstring}`);
+                            }
+                            
+                            if (node.data.parameters) {
+                                ConsoleUtils.log(`Parameters: ${node.data.parameters.join(', ')}`);
+                            }
+                            
+                            if (node.data.isMethod) {
+                                ConsoleUtils.log(`Method of class: ${node.data.class}`);
+                            }
+                            
+                            if (node.data.inheritance && node.data.inheritance.length) {
+                                ConsoleUtils.log(`Inherits from: ${node.data.inheritance.join(', ')}`);
+                            }
+                        }
+                        
+                        // Connections
+                        const connections = this.getNodeConnections(nodeId);
+                        
+                        if (connections.incoming.length) {
+                            ConsoleUtils.log(`Incoming connections: ${connections.incoming.map(c => 
+                                `${c.node.label} (${c.type})`
+                            ).join(', ')}`);
+                        }
+                        
+                        if (connections.outgoing.length) {
+                            ConsoleUtils.log(`Outgoing connections: ${connections.outgoing.map(c => 
+                                `${c.node.label} (${c.type})`
+                            ).join(', ')}`);
+                        }
+                        
+                        ConsoleUtils.groupEnd();
+                    } catch (error) {
+                        // Fallback if console methods fail
+                        console.log(`Node: ${node.label} (${node.type})`);
+                        console.log('Type:', node.type);
+                        console.log('Data:', node.data);
+                        console.log('Connections:', this.getNodeConnections(nodeId));
+                        
+                        // Also show an alert with basic info for accessibility
+                        alert(`Node: ${node.label} (${node.type})
+Type: ${node.type}
+${node.data.docstring ? '\nDocstring: ' + node.data.docstring : ''}
+${node.data.parameters ? '\nParameters: ' + node.data.parameters.join(', ') : ''}
+${node.data.isMethod ? '\nMethod of class: ' + node.data.class : ''}`);
+                    }
+                },
+                
+                // Get node connections
+                getNodeConnections: function(nodeId) {
+                    const incomingEdges = this.graph.edges.filter(e => e.target === nodeId);
+                    const outgoingEdges = this.graph.edges.filter(e => e.source === nodeId);
+                    
+                    return {
+                        incoming: incomingEdges.map(e => ({
+                            type: e.type,
+                            node: this.getNodeById(e.source)
+                        })),
+                        outgoing: outgoingEdges.map(e => ({
+                            type: e.type,
+                            node: this.getNodeById(e.target)
+                        }))
+                    };
+                },
+                
+                // Get node by ID
+                getNodeById: function(id) {
+                    return this.graph.nodes.find(node => node.id === id);
+                },
+                
+                // Clear the graph
+                clearGraph: function() {
+                    this.graph.nodes = [];
+                    this.graph.edges = [];
+                    this.graph.selectedNode = null;
+                    
+                    // Clear canvas
+                    while (this.elements.canvas.firstChild) {
+                        this.elements.canvas.removeChild(this.elements.canvas.firstChild);
+                    }
+                    
+                    // Show the canvas tip
+                    if (this.elements.canvasTip) {
+                        this.elements.canvasTip.style.display = 'block';
+                    }
+                },
+                
+                // Parse Python module code
+                parseModule: function(code, moduleName) {
+                    let nodeCounter = 0;
+                    
+                    // Helper to generate node IDs
+                    const getNodeId = () => 'node_' + (nodeCounter++);
+                    
+                    // Helper to extract docstrings
+                    const extractDocstring = (text) => {
+                        const match = text.match(/^(?:\s*)('''|""")([^]*?)\1/m);
+                        return match ? match[2].trim() : '';
+                    };
+                    
+                    // Helper to extract a code block based on indentation
+                    const extractBlock = (text, startIndex) => {
+                        const lines = text.substring(startIndex).split('\n');
+                        const firstLine = lines[0];
+                        
+                        // If the block starts with a blank line, use the indentation of the next non-blank line
+                        let baseIndentLine = firstLine.trim() ? firstLine : null;
+                        let lineIndex = 1;
+                        
+                        while (!baseIndentLine && lineIndex < lines.length) {
+                            if (lines[lineIndex].trim()) {
+                                baseIndentLine = lines[lineIndex];
+                            }
+                            lineIndex++;
+                        }
+                        
+                        // If we couldn't find a non-blank line, return the first line
+                        if (!baseIndentLine) {
+                            return firstLine;
+                        }
+                        
+                        const baseIndent = baseIndentLine.match(/^\s*/)[0].length;
+                        
+                        let endLine = 0;
+                        while (endLine < lines.length) {
+                            const line = lines[endLine];
+                            // Consider a line part of the block if it's blank or indented more than the base
+                            if (line.trim() && line.match(/^\s*/)[0].length < baseIndent) {
+                                break;
+                            }
+                            endLine++;
+                        }
+                        
+                        return lines.slice(0, endLine).join('\n');
+                    };
+                    
+                    try {
+                        const result = {
+                            nodes: [],
+                            edges: []
+                        };
+
+                        // Create the module node as the root of our graph
+                        const moduleId = getNodeId();
+                        result.nodes.push({
+                            id: moduleId,
+                            type: 'module',
+                            label: moduleName,
+                            data: {
+                                docstring: extractDocstring(code)
+                            }
+                        });
+
+                        // Extract imports
+                        const importRegex = /^\s*import\s+([\w.,\s]+)|^\s*from\s+([\w.]+)\s+import/gm;
+                        let importMatch;
+                        
+                        while ((importMatch = importRegex.exec(code)) !== null) {
+                            const importName = importMatch[1] ? importMatch[1].trim() : importMatch[2].trim();
+                            const importId = getNodeId();
+                            
+                            result.nodes.push({
+                                id: importId,
+                                type: 'module',
+                                label: importName,
+                                data: { imported: true }
+                            });
+                            
+                            result.edges.push({
+                                source: moduleId,
+                                target: importId,
+                                type: 'imports'
+                            });
+                        }
+
+                        // Extract classes and their methods
+                        const classRegex = /^\s*class\s+(\w+)(?:\(([^)]*)\))?:/gm;
+                        let classMatch;
+                        
+                        while ((classMatch = classRegex.exec(code)) !== null) {
+                            const className = classMatch[1];
+                            const inheritance = classMatch[2] ? classMatch[2].split(',').map(c => c.trim()) : [];
+                            const classId = getNodeId();
+                            
+                            // Extract class body
+                            const classBody = extractBlock(code, classMatch.index + classMatch[0].length);
+                            
+                            // Extract class docstring
+                            const docstring = extractDocstring(classBody);
+                            
+                            result.nodes.push({
+                                id: classId,
+                                type: 'class',
+                                label: className,
+                                data: { 
+                                    docstring: docstring,
+                                    inheritance: inheritance
+                                }
+                            });
+                            
+                            result.edges.push({
+                                source: moduleId,
+                                target: classId,
+                                type: 'defines'
+                            });
+                            
+                            // Extract methods
+                            const methodRegex = /^\s+def\s+(\w+)\s*\(([^)]*)\):/gm;
+                            let methodMatch;
+                            
+                            while ((methodMatch = methodRegex.exec(classBody)) !== null) {
+                                const methodName = methodMatch[1];
+                                const params = methodMatch[2].split(',').map(p => p.trim());
+                                const methodId = getNodeId();
+                                
+                                // Extract method body
+                                const methodBody = extractBlock(classBody, methodMatch.index + methodMatch[0].length);
+                                
+                                // Extract method docstring
+                                const methodDocstring = extractDocstring(methodBody);
+                                
+                                result.nodes.push({
+                                    id: methodId,
+                                    type: 'function',
+                                    label: methodName,
+                                    data: { 
+                                        docstring: methodDocstring,
+                                        parameters: params,
+                                        isMethod: true,
+                                        class: className
+                                    }
+                                });
+                                
+                                result.edges.push({
+                                    source: classId,
+                                    target: methodId,
+                                    type: 'contains'
+                                });
+                            }
+                        }
+
+                        // Extract top-level functions
+                        const funcRegex = /^def\s+(\w+)\s*\(([^)]*)\):/gm;
+                        let funcMatch;
+                        
+                        while ((funcMatch = funcRegex.exec(code)) !== null) {
+                            const funcName = funcMatch[1];
+                            const params = funcMatch[2].split(',').map(p => p.trim());
+                            const funcId = getNodeId();
+                            
+                            // Extract function body
+                            const funcBody = extractBlock(code, funcMatch.index + funcMatch[0].length);
+                            
+                            // Extract function docstring
+                            const docstring = extractDocstring(funcBody);
+                            
+                            result.nodes.push({
+                                id: funcId,
+                                type: 'function',
+                                label: funcName,
+                                data: { 
+                                    docstring: docstring,
+                                    parameters: params
+                                }
+                            });
+                            
+                            result.edges.push({
+                                source: moduleId,
+                                target: funcId,
+                                type: 'defines'
+                            });
+                        }
+
+                        return result;
+                    } catch (error) {
+                        ConsoleUtils.error('Error parsing module:', error);
+                        throw error;
+                    }
+                },
+                
+                // Render the graph
+                renderGraph: function(data, layoutType) {
+                    // Clear existing graph
+                    this.clearGraph();
+                    
+                    // Load the data into the graph model
+                    this.graph.nodes = data.nodes.map(node => ({
+                        ...node,
+                        x: 0,
+                        y: 0,
+                        element: null
+                    }));
+                    
+                    this.graph.edges = data.edges.map(edge => ({
+                        ...edge,
+                        element: null
+                    }));
+                    
+                    // Apply layout
+                    this.applyLayout(layoutType);
+                    
+                    // Create edges first (so they appear behind nodes)
+                    this.graph.edges.forEach(edge => {
+                        this.renderEdge(edge);
+                    });
+                    
+                    // Create nodes
+                    this.graph.nodes.forEach(node => {
+                        this.renderNode(node);
+                    });
+                    
+                    // Update edge positions
+                    this.updateEdgePositions();
+                },
+                
+                // Apply a layout to position nodes
+                applyLayout: function(layoutType) {
+                    const width = this.elements.canvas.clientWidth;
+                    const height = this.elements.canvas.clientHeight;
+                    
+                    switch (layoutType) {
+                        case 'circular':
+                            this.applyCircularLayout(width, height);
+                            break;
+                        case 'force':
+                            this.applyForceLayout(width, height);
+                            break;
+                        case 'hierarchical':
+                        default:
+                            this.applyHierarchicalLayout(width, height);
+                            break;
+                    }
+                    
+                    // Update the current layout
+                    this.currentLayout = layoutType;
+                    
+                    // Update node positions in the DOM
+                    this.updateNodePositions();
+                    
+                    // Update edge positions
+                    this.updateEdgePositions();
+                },
+                
+                // Hierarchical layout
+                applyHierarchicalLayout: function(width, height) {
+                    // Group nodes by type
+                    const moduleNodes = this.graph.nodes.filter(n => n.type === 'module');
+                    const classNodes = this.graph.nodes.filter(n => n.type === 'class');
+                    const functionNodes = this.graph.nodes.filter(n => n.type === 'function');
+                    
+                    const centerX = width / 2;
+                    const nodeSpacing = 120;
+                    const levelHeight = 130;
+                    
+                    // Position modules at top
+                    moduleNodes.forEach((node, index) => {
+                        const x = centerX + (index - (moduleNodes.length - 1) / 2) * nodeSpacing;
+                        node.x = x;
+                        node.y = 70;
+                    });
+                    
+                    // Position classes below modules
+                    classNodes.forEach((node, index) => {
+                        const x = centerX + (index - (classNodes.length - 1) / 2) * nodeSpacing;
+                        node.x = x;
+                        node.y = 70 + levelHeight;
+                    });
+                    
+                    // Position functions in rows
+                    const funcsPerRow = Math.max(3, Math.floor(width / nodeSpacing));
+                    functionNodes.forEach((node, index) => {
+                        const row = Math.floor(index / funcsPerRow);
+                        const col = index % funcsPerRow;
+                        const rowWidth = Math.min(functionNodes.length - row * funcsPerRow, funcsPerRow);
+                        
+                        const x = centerX + (col - (rowWidth - 1) / 2) * nodeSpacing;
+                        node.x = x;
+                        node.y = 70 + levelHeight * 2 + row * levelHeight;
+                    });
+                },
+                
+                // Circular layout
+                applyCircularLayout: function(width, height) {
+                    // Group nodes by type
+                    const moduleNodes = this.graph.nodes.filter(n => n.type === 'module');
+                    const classNodes = this.graph.nodes.filter(n => n.type === 'class');
+                    const functionNodes = this.graph.nodes.filter(n => n.type === 'function');
+                    
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    
+                    // Position modules in center
+                    const moduleRadius = 80;
+                    moduleNodes.forEach((node, index) => {
+                        const angle = (index / Math.max(1, moduleNodes.length)) * 2 * Math.PI;
+                        node.x = centerX + moduleRadius * Math.cos(angle);
+                        node.y = centerY + moduleRadius * Math.sin(angle);
+                    });
+                    
+                    // Position classes in middle circle
+                    const classRadius = 180;
+                    classNodes.forEach((node, index) => {
+                        const angle = (index / Math.max(1, classNodes.length)) * 2 * Math.PI;
+                        node.x = centerX + classRadius * Math.cos(angle);
+                        node.y = centerY + classRadius * Math.sin(angle);
+                    });
+                    
+                    // Position functions in outer circle
+                    const functionRadius = 280;
+                    functionNodes.forEach((node, index) => {
+                        const angle = (index / Math.max(1, functionNodes.length)) * 2 * Math.PI;
+                        node.x = centerX + functionRadius * Math.cos(angle);
+                        node.y = centerY + functionRadius * Math.sin(angle);
+                    });
+                },
+                
+                // Force-directed layout
+                applyForceLayout: function(width, height) {
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const radius = Math.min(width, height) * 0.4;
+                    
+                    // Simple force-directed layout (random starting positions)
+                    this.graph.nodes.forEach((node, index) => {
+                        const angle = (index / this.graph.nodes.length) * 2 * Math.PI;
+                        const distance = radius * (0.7 + Math.random() * 0.3);
+                        
+                        node.x = centerX + distance * Math.cos(angle);
+                        node.y = centerY + distance * Math.sin(angle);
+                    });
+                },
+                
+                // Render a node
+                renderNode: function(node) {
+                    // Create node element
+                    const element = document.createElement('div');
+                    element.className = `node node-${node.type}`;
+                    element.textContent = node.label;
+                    element.setAttribute('data-id', node.id);
+                    element.setAttribute('data-type', node.type);
+                    
+                    // Position the node
+                    element.style.left = (node.x - element.offsetWidth / 2) + 'px';
+                    element.style.top = (node.y - element.offsetHeight / 2) + 'px';
+                    
+                    // Store element reference
+                    node.element = element;
+                    
+                    // Add to canvas
+                    this.elements.canvas.appendChild(element);
+                    
+                    // Fix positioning after the element is added to the DOM
+                    requestAnimationFrame(() => {
+                        element.style.left = (node.x - element.offsetWidth / 2) + 'px';
+                        element.style.top = (node.y - element.offsetHeight / 2) + 'px';
+                    });
+                },
+                
+                // Render an edge
+                renderEdge: function(edge) {
+                    const sourceNode = this.getNodeById(edge.source);
+                    const targetNode = this.getNodeById(edge.target);
+                    
+                    if (!sourceNode || !targetNode) {
+                        return null;
+                    }
+                    
+                    // Create edge element
+                    const element = document.createElement('div');
+                    element.className = 'edge';
+                    element.setAttribute('data-source', edge.source);
+                    element.setAttribute('data-target', edge.target);
+                    
+                    // Add to canvas
+                    this.elements.canvas.appendChild(element);
+                    
+                    // Store element reference
+                    edge.element = element;
+                },
+                
+                // Update node positions in the DOM
+                updateNodePositions: function() {
+                    this.graph.nodes.forEach(node => {
+                        if (node.element) {
+                            node.element.style.left = (node.x - node.element.offsetWidth / 2) + 'px';
+                            node.element.style.top = (node.y - node.element.offsetHeight / 2) + 'px';
+                        }
+                    });
+                },
+                
+                // Update edge positions
+                updateEdgePositions: function() {
+                    this.graph.edges.forEach(edge => {
+                        if (!edge.element) return;
+                        
+                        const sourceNode = this.getNodeById(edge.source);
+                        const targetNode = this.getNodeById(edge.target);
+                        
+                        if (!sourceNode || !targetNode) return;
+                        
+                        // Calculate edge geometry
+                        const dx = targetNode.x - sourceNode.x;
+                        const dy = targetNode.y - sourceNode.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                        
+                        // Update edge position and rotation
+                        edge.element.style.width = length + 'px';
+                        edge.element.style.left = sourceNode.x + 'px';
+                        edge.element.style.top = sourceNode.y + 'px';
+                        edge.element.style.transform = `rotate(${angle}deg)`;
+                    });
+                }
+            };
+            
+            // Initialize the application
+            App.init();
+            
+            // Export the App to the global namespace for debugging
+            window.CodeGarden = App;
+            
+            // Welcome message
+            console.log('%c🌱 CodeGarden: Module Explorer', 'color: #3a7561; font-size: 16px; font-weight: bold;');
+            console.log('Check your browser console (F12) for detailed node information when clicking on nodes.');
+        })();
+    </script>
+</body>
+</html>
