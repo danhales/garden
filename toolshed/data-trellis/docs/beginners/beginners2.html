@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataTrellis: Understanding CSV Data</title>
+    <style>
+        /* 🌱 Root Variables - The soil of our garden */
+        :root {
+            /* Warm color palette - single accent color */
+            --accent: #f59e0b;
+            --accent-light: #fcd34d;
+            --accent-dark: #d97706;
+            
+            /* Neutral tones */
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            /* Spacing and structure */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --radius: 6px;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            
+            /* Theme variables */
+            --bg-color: var(--gray-50);
+            --text-color: var(--gray-800);
+            --card-bg: white;
+            --border-color: var(--gray-200);
+            --accent-bg: rgba(245, 158, 11, 0.1);
+        }
+        
+        /* Dark theme variables */
+        html.dark-theme {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --border-color: #333;
+            --accent-bg: rgba(245, 158, 11, 0.15);
+        }
+        
+        /* Base Styles */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+        
+        /* Header Bar */
+        .header-bar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 600;
+        }
+        
+        .logo-icon {
+            color: var(--accent);
+        }
+        
+        /* Theme Toggle Container */
+        .theme-toggle-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Document Header */
+        header {
+            margin-bottom: var(--spacing-xl);
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--text-color);
+            font-size: 2.25rem;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .subtitle {
+            color: var(--gray-600);
+            font-size: 1.25rem;
+            margin-top: 0;
+            position: relative;
+        }
+        
+        /* Butterfly with glow effect for subtitle readability */
+        .butterfly-helper {
+            display: inline-block;
+            margin-left: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        html.dark-theme .butterfly-helper {
+            opacity: 1;
+            filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.7));
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .card h2 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card h3 {
+            font-size: 1.25rem;
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-color);
+        }
+        
+        .card p {
+            margin-top: 0;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        /* Readability issue in dark mode - deliberately left unfixed */
+        .dark-text {
+            color: #333; /* This will be hard to read in dark mode */
+        }
+        
+        /* Butterfly with glow effect to highlight readability issues */
+        .butterfly-readability {
+            display: inline-block;
+            margin-left: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        html.dark-theme .butterfly-readability {
+            opacity: 1;
+            filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.7));
+        }
+        
+        /* Lightbulb styles */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .lightbulb {
+            color: var(--text-color);
+            transition: color 0.3s, filter 0.3s;
+        }
+        
+        html.dark-theme .lightbulb {
+            color: #ffd970;
+            filter: drop-shadow(0 0 5px rgba(255, 200, 0, 0.7));
+        }
+        
+        /* Highlights and Special Sections */
+        .highlight {
+            background-color: var(--accent-bg);
+            border-left: 4px solid var(--accent);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        
+        .task {
+            background-color: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        
+        .task h3 {
+            color: var(--accent-dark);
+            margin-top: var(--spacing-sm);
+        }
+        
+        .note {
+            background-color: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid var(--accent);
+            padding: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        
+        /* Download link styles */
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius);
+            border: 1px solid var(--accent);
+            transition: background-color 0.2s;
+        }
+        
+        .download-link:hover {
+            background-color: var(--accent-bg);
+        }
+        
+        .download-icon {
+            display: inline-block;
+        }
+        
+        /* Bug alert section */
+        .bug-alert {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        
+        /* Lists */
+        ol, ul {
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            padding-left: 1.5rem;
+        }
+        
+        li {
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        /* Code Blocks */
+        code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.875em;
+            color: var(--accent);
+        }
+        
+        html.dark-theme code {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        pre {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 0.875rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        html.dark-theme pre {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Image Container */
+        .image-container {
+            text-align: center;
+            margin: var(--spacing-lg) 0;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+        }
+        
+        .image-caption {
+            margin-top: var(--spacing-sm);
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-lg) 0;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: rgba(0, 0, 0, 0.03);
+            font-weight: 600;
+        }
+        
+        html.dark-theme th {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        html.dark-theme tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .version-history {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            text-align: left;
+        }
+        
+        html.dark-theme .version-history {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .version-item {
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .version-tag {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .update-info {
+            margin-top: var(--spacing-md);
+            font-style: italic;
+        }
+        
+        /* Going Further section */
+        .going-further {
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px dashed var(--border-color);
+        }
+        
+        /* Theme Toggle Switch Styles - DELIBERATELY BUGGY! */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: var(--gray-300);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+            justify-content: space-between;
+        }
+        
+        .theme-toggle.dark {
+            background-color: var(--accent);
+        }
+        
+        /* 🐛 BUG 1: The icons are positioned incorrectly - moon should be on left, sun on right */
+        .theme-toggle .moon-icon {
+            color: var(--gray-500);
+            margin-left: auto; /* This pushes it to the right */
+            z-index: 2;
+        }
+        
+        .theme-toggle .sun-icon {
+            color: var(--gray-500); 
+            z-index: 2;
+        }
+        
+        /* 🐛 BUG 2: The toggle position needs adjustment when activated */
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+        
+        .theme-toggle.dark::after {
+            transform: translateX(30px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Bar with Theme Toggle -->
+    <div class="header-bar">
+        <div class="logo">
+            <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3h18v18H3z"></path>
+                <path d="M9 14v1M9 19v-2M15 14v1M15 19v-2M9 8.5v-1M15 8.5v-1"></path>
+                <path d="M12 12a3 3 0 100-6 3 3 0 000 6z"></path>
+            </svg>
+            DataTrellis
+        </div>
+        <div class="theme-toggle-container">
+            <div class="theme-toggle" id="theme-toggle">
+                <!-- BUG: These icons are in the wrong positions -->
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Understanding CSV Data</h1>
+            
+            <!-- Accessibility note: The "subtitle" class may have text that is difficult to read in dark mode. -->
+            <p class="subtitle">Exploring the foundation of DataTrellis <span class="butterfly-helper">🦋</span></p>
+        </header>
+
+        <div class="card">
+            <h2>1. Why DataTrellis Matters</h2>
+            
+            <h3>1.1 From Spreadsheets to Data Tools</h3>
+            <p>We all spend countless hours working with data in spreadsheets. While incredibly versatile, spreadsheets have limitations when it comes to:</p>
+            
+            <ul>
+                <li><strong>Data volume</strong> - Large datasets cause spreadsheet applications to slow down</li>
+                <li><strong>Specialized analysis</strong> - Complex operations require formulas that are hard to maintain</li>
+                <li><strong>Visualization</strong> - Basic charts don't always reveal the insights we need</li>
+                <li><strong>Sharing insights</strong> - Distributing results can be cumbersome</li>
+            </ul>
+            
+            <p>DataTrellis bridges the gap between familiar spreadsheets and more powerful data tools. It provides a gentle slope rather than a steep cliff for analyzing CSV data without requiring you to learn complex programming or data science tools right away.</p>
+            
+            <div class="image-container">
+                <img src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='200' viewBox='0 0 600 200' preserveAspectRatio='none'%3E%3Crect fill='%23f3f4f6' width='600' height='200'/%3E%3Cpath d='M0,200 L150,130 L300,80 L450,30 L600,10' stroke='%23f59e0b' stroke-width='3' fill='none'/%3E%3Ctext x='40' y='190' font-family='sans-serif' font-size='14' fill='%234b5563'%3ESpreadsheets%3C/text%3E%3Ctext x='165' y='140' font-family='sans-serif' font-size='14' fill='%23f59e0b'%3EDataTrellis%3C/text%3E%3Ctext x='460' y='40' font-family='sans-serif' font-size='14' fill='%234b5563'%3EAdvanced Tools%3C/text%3E%3C/svg%3E" alt="Learning curve comparison showing DataTrellis as a middle ground between spreadsheets and advanced data tools">
+                <div class="image-caption">DataTrellis offers a gentler learning curve compared to more advanced data tools <span class="butterfly-readability">🦋</span></div>
+            </div>
+            <h3>1.2 The Power of Browser-Based Analysis</h3>
+            <p>DataTrellis runs entirely in your web browser, which offers several key advantages:</p>
+            
+            <ul>
+                <li><strong>Zero installation</strong> - Just open the HTML file and you're ready to go</li>
+                <li><strong>Data privacy</strong> - Your data never leaves your computer</li>
+                <li><strong>Accessibility</strong> - Works on almost any computer with a modern browser</li>
+                <li><strong>Extensibility</strong> - The plugin architecture lets you add specialized capabilities</li>
+                <li><strong>Transparency</strong> - You can see and learn from all the code</li>
+            </ul>
+            
+            <p>This browser-based approach makes DataTrellis a perfect learning environment. You can see exactly how it works and gradually build your understanding of data processing concepts.</p>
+            
+            <h3>1.3 How This Guide Will Empower You</h3>
+            <p>By the end of this guide, you'll be able to:</p>
+            
+            <ul>
+                <li>Understand the value and limitations of CSV files</li>
+                <li>Prepare data in formats that work well with DataTrellis</li>
+                <li>Explore data through filtering and basic visualization</li>
+                <li>Make simple modifications to enhance your data exploration experience</li>
+                <li>Start building a foundation for more advanced data skills</li>
+            </ul>
+            
+            <div class="highlight">
+                <p>Most importantly, you'll develop a practical mental model of how data tools work "under the hood." This understanding will serve you well regardless of which data tools you use in the future.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>2. Getting Started</h2>
+            
+            <h3>2.1 Installing Visual Studio Code</h3>
+            <p>Refer to your organization's guidelines for installing Visual Studio Code and obtaining access to browser developer tools.</p>
+            
+            <h3>2.2 Opening the DataTrellis Files</h3>
+            <p>DataTrellis consists of a single HTML file that contains everything needed to run the application:</p>
+            
+            <ol>
+                <li>Locate the <code>data-trellis.html</code> file in your download folder</li>
+                <li>Open it in your web browser by double-clicking the file</li>
+                <li>For exploration and modification, also open it in Visual Studio Code</li>
+            </ol>
+            
+            <div class="note">
+                <p>One of the powerful aspects of DataTrellis is that it's a completely self-contained HTML file. This means you can open and inspect it in both a browser (to use it) and a text editor (to learn from and modify it).</p>
+            </div>
+            
+            <h3>2.3 Running DataTrellis Locally</h3>
+            <p class="dark-text">When you open the DataTrellis HTML file in your browser, you'll see the welcome screen (note: this is a simplified view, and the actual distribution may look slightly different):</p>
+            
+            <div class="image-container">
+                <img src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300' preserveAspectRatio='none'%3E%3Crect fill='%23ffffff' width='600' height='300'/%3E%3Crect x='20' y='20' width='560' height='50' fill='%23f3f4f6' rx='5' ry='5'/%3E%3Ctext x='40' y='50' font-family='sans-serif' font-size='16' fill='%234b5563'%3EDataTrellis%3C/text%3E%3Crect x='490' y='35' width='50' height='20' fill='%23d1d5db' rx='10' ry='10'/%3E%3Ccircle cx='500' cy='45' r='8' fill='%23ffffff'/%3E%3Crect x='20' y='90' width='560' height='190' fill='%23f9fafb' rx='5' ry='5'/%3E%3Crect x='120' y='140' width='360' height='100' stroke='%239ca3af' stroke-dasharray='5,5' fill='none' stroke-width='2' rx='5' ry='5'/%3E%3Ctext x='180' y='190' font-family='sans-serif' font-size='16' fill='%236b7280'%3EDrag CSV files here%3C/text%3E%3C/svg%3E" alt="DataTrellis welcome screen with file drop zone">
+                <div class="image-caption">The DataTrellis welcome screen showing the file drop zone</div>
+            </div>
+
+            <p>The application is now ready to use! No servers, databases, or complex setup required.</p>
+            
+            <h3>2.4 Your First Data View</h3>
+            <p>Once DataTrellis is open in your browser, you're ready to explore some data:</p>
+            
+            <ol>
+                <li>Prepare a CSV file for upload (we'll cover this in the next section)</li>
+                <li>Drag and drop the file onto the upload area in DataTrellis</li>
+                <li>The data will load and display in a table view</li>
+                <li>Use the search and filter controls to explore your data</li>
+            </ol>
+            
+            <div class="task">
+                <h3>Try It Yourself</h3>
+                <p>If you don't have a CSV file handy, you can use the sample below:</p>
+                <pre>Name,Email,Department,Hire Date
+John Doe,john.doe@example.com,Engineering,2020-03-15
+Jane Smith,jane.smith@example.com,Marketing,2019-07-22
+Robert Johnson,robert.j@example.com,Finance,2021-01-08
+Emily Brown,emily.b@example.com,Human Resources,2018-05-10
+Michael Wilson,m.wilson@example.com,Engineering,2020-11-30</pre>
+                <p>To create a CSV file from this data:</p>
+                <ol>
+                    <li>Open Visual Studio Code</li>
+                    <li>Create a new file (File → New File)</li>
+                    <li>Copy and paste the text above</li>
+                    <li>Save the file with a .csv extension (e.g., "employees.csv")</li>
+                    <li>Upload to DataTrellis using drag-and-drop</li>
+                </ol>
+                <p><a href="#" class="download-link" id="download-sample">
+                    <span class="download-icon">⬇️</span> Download Sample CSV
+                </a></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-header">
+                3. Understanding Data Files
+                <svg class="lightbulb" id="csv-lightbulb" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="9" y1="18" x2="15" y2="18"></line>
+                    <line x1="10" y1="22" x2="14" y2="22"></line>
+                    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8A6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                </svg>
+            </h2>
+            
+            <h3>3.1 What is CSV and Why It Matters</h3>
+            <p>CSV (Comma-Separated Values) is one of the most fundamental and widespread formats for exchanging data. It's the format we routinely use to pass some of our most valuable data back and forth between systems and people.</p>
+            
+            <p>Despite its simplicity, CSV is incredibly powerful because:</p>
+            
+            <ul>
+                <li><strong>Universal compatibility</strong> - Nearly every data tool can import and export CSV</li>
+                <li><strong>Human readability</strong> - You can open and understand CSV files in any text editor</li>
+                <li><strong>Simplicity</strong> - The straightforward structure makes it easy to process</li>
+                <li><strong>Efficiency</strong> - CSV files are compact and quick to transfer</li>
+            </ul>
+
+            <p>DataTrellis is specifically designed to help us learn how to supercharge this format with plugins and parallel "strand" applications that create, modify, and extract insights from CSVs.</p>
+            
+            <div class="note">
+                <p><strong>What is a "strand" application?</strong> A strand application is a standalone HTML file, just like this documentation page, that can process data without requiring any special tools or server infrastructure. These applications are completely self-contained, running entirely in your browser. They can operate independently while collaborating with other applications through CSV files - which is exactly how most of us already share data with colleagues! DataTrellis itself is a strand application, and you can create your own once you understand the patterns.</p>
+            </div>
+            
+            <div class="highlight">
+                <p>While CSV might seem basic compared to databases or specialized data formats, it remains the lingua franca of data exchange. Understanding how to effectively work with CSV files will serve you well throughout your data journey.</p>
+            </div>
+            
+            <p>Here's what a simple CSV file looks like "under the hood":</p>
+            
+            <pre>Name,Email,Department,Hire Date
+John Doe,john.doe@example.com,Engineering,2020-03-15
+Jane Smith,jane.smith@example.com,Marketing,2019-07-22
+Robert Johnson,robert.j@example.com,Finance,2021-01-08</pre>
+            
+            <p>The first line contains the column headers, and each subsequent line is a data record with values separated by commas.</p>
+
+            <h3>3.2 Preparing Your Data for Analysis</h3>
+            <p>To get the most out of DataTrellis, it helps to prepare your CSV files properly:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Best Practice</th>
+                        <th>Why It Matters</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Include header row</td>
+                        <td>Provides clear column names for filtering and visualization</td>
+                    </tr>
+                    <tr>
+                        <td>Use consistent formatting</td>
+                        <td>Ensures accurate sorting and filtering (especially for dates and numbers)</td>
+                    </tr>
+                    <tr>
+                        <td>Clean your data</td>
+                        <td>Remove duplicates and fix inconsistencies before analysis</td>
+                    </tr>
+                    <tr>
+                        <td>Handle special characters</td>
+                        <td>Properly escape commas and quotes within field values</td>
+                    </tr>
+                    <tr>
+                        <td>Use appropriate field names</td>
+                        <td>Choose clear, meaningful names without special characters</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p>Fortunately, most spreadsheet programs handle these details automatically when you export to CSV format.</p>
+            
+            <h3>3.3 Uploading Your First Dataset</h3>
+            <p>DataTrellis makes it easy to load your CSV files:</p>
+            
+            <ol>
+                <li><strong>Drag and drop</strong> - Simply drag your CSV file onto the drop zone</li>
+                <li><strong>File browser</strong> - Click the drop zone to open a file browser</li>
+            </ol>
+            
+            <p>Once uploaded, DataTrellis automatically processes your CSV file, identifying columns and data types to provide the best possible view of your data.</p>
+            
+            <div class="note">
+                <p>DataTrellis processes your data entirely in your browser. Your files are never sent to any server, making it ideal for working with sensitive information.</p>
+            </div>
+            
+            <h3>3.4 Managing Multiple Files</h3>
+            <p>One of DataTrellis's strengths is the ability to work with multiple CSV files simultaneously:</p>
+            
+            <ul>
+                <li>Upload additional files using the "+" tab at the top of the interface</li>
+                <li>Switch between datasets by clicking on their respective tabs</li>
+                <li>Close datasets you no longer need using the "×" on each tab</li>
+            </ul>
+            
+            <p>This multi-file approach makes it easy to compare different datasets or work with related information split across multiple files.</p>
+        </div>
+
+        <div class="going-further card">
+            <h2>Going Further</h2>
+            <p>Once you're comfortable with the basics, you might want to explore these more advanced possibilities:</p>
+            
+            <ul>
+                <li><strong>Custom Filters</strong> - Create specialized filters for your specific data needs</li>
+                <li><strong>Data Visualization</strong> - Build custom visualizations to reveal patterns in your data</li>
+                <li><strong>Plugin Development</strong> - Extend DataTrellis with your own custom tools</li>
+                <li><strong>Data Transformation</strong> - Create workflows to clean, reshape, and enhance your data</li>
+            </ul>
+            
+            <div class="bug-alert">
+                <p><strong>Developer Challenge:</strong> This page contains subtle learning opportunities! <span class="bug-emoji">🐛</span></p>
+                <p>Open this HTML file in Visual Studio Code and search (Ctrl+F) for the <span class="bug-emoji">🐛</span> and <span class="butterfly-readability">🦋</span> emojis to find and fix the issues.</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>DataTrellis Documentation</p>
+            
+            <!-- Version history will be rendered here by JavaScript -->
+            <div id="version-history-container"></div>
+            
+            <p class="update-info">Last updated on March 28, 2025 by 🌱</p>
+        </footer>
+    </div>
+
+    <script>
+        /**
+         * DocTrellis v0.7.0 - Documentation with subtle learning moments
+         * Ironic Lightbulb Edition - A permanently glowing lightbulb in dark mode
+         */
+        
+        // ThemeToggle Component - Manages the theme toggle functionality
+        const ThemeToggle = {
+            // Holds the reference to the toggle DOM element 
+            element: null,
+            
+            // Initialize the component
+            init: function() {
+                // Get the toggle element
+                this.element = document.getElementById('theme-toggle');
+                if (!this.element) return;
+                
+                // Add click event handler
+                this.element.addEventListener('click', () => this.toggle());
+            },
+            
+            // Toggle between light and dark themes
+            toggle: function() {
+                // Toggle dark theme on root element
+                document.documentElement.classList.toggle('dark-theme');
+                
+                // Toggle dark class on the toggle itself
+                this.element.classList.toggle('dark');
+            }
+        };
+        
+        // DocumentManager Component - Handles version history and sample file download
+        const DocumentManager = {
+            // Initialize the component
+            init: function() {
+                this.renderVersionHistory();
+                this.setupDownloadLink();
+            },
+            
+            // Render the version history section
+            renderVersionHistory: function() {
+                const container = document.getElementById('version-history-container');
+                if (!container) return;
+                
+                // Create version history container
+                const historySection = document.createElement('div');
+                historySection.className = 'version-history';
+                
+                // Add heading
+                const heading = document.createElement('h3');
+                heading.textContent = 'Guide Evolution 🧬';
+                heading.style.marginTop = '0';
+                historySection.appendChild(heading);
+                
+                // Version history data
+                const versionHistory = [
+                    { version: 'v0.1.0', name: 'First Seed', description: 'Initial guide structure' },
+                    { version: 'v0.1.1', name: 'Growing Content', description: 'Added more helpful explanations' },
+                    { version: 'v0.1.2', name: 'Style Improvements', description: 'Made everything easier to read' },
+                    { version: 'v0.1.3', name: 'Simplification', description: 'Removed unnecessarily complex parts' },
+                    { version: 'v0.2.0', name: 'Learning Journey', description: 'Added hands-on activities' },
+                    { version: 'v0.2.1', name: 'Friendly Explorer', description: 'More approachable language and examples' },
+                    { version: 'v0.3.0', name: 'Workflow Integration', description: 'Connected documentation to practical work applications' },
+                    { version: 'v0.4.0', name: 'Bug Hunt', description: 'Added interactive learning through deliberate bugs' },
+                    { version: 'v0.4.1', name: 'Security Pruning', description: 'Removed unnecessary browser storage access' },
+                    { version: 'v0.5.0', name: 'Garden Path', description: 'Added discovery-based learning with butterfly moments' },
+                    { version: 'v0.6.0', name: 'Cultivating Curiosity', description: 'Adding practical bugs with visual feedback' },
+                    { version: 'v0.7.0', name: 'Ironic Lightbulb', description: 'A permanently glowing lightbulb in dark mode 💡' }
+                ];
+                
+                // Add each version as a list item
+                versionHistory.forEach(ver => {
+                    const item = document.createElement('div');
+                    item.className = 'version-item';
+                    
+                    item.innerHTML = `<span class="version-tag">${ver.version}:</span> ${ver.name} - ${ver.description}`;
+                    
+                    historySection.appendChild(item);
+                });
+                
+                // Add to container
+                container.appendChild(historySection);
+            },
+            
+            // Set up the sample CSV download link
+            setupDownloadLink: function() {
+                const downloadLink = document.getElementById('download-sample');
+                if (!downloadLink) return;
+                
+                downloadLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Sample CSV content
+                    const csvContent = `Name,Email,Department,Hire Date
+John Doe,john.doe@example.com,Engineering,2020-03-15
+Jane Smith,jane.smith@example.com,Marketing,2019-07-22
+Robert Johnson,robert.j@example.com,Finance,2021-01-08
+Emily Brown,emily.b@example.com,Human Resources,2018-05-10
+Michael Wilson,m.wilson@example.com,Engineering,2020-11-30`;
+                    
+                    // Create a Blob containing the CSV data
+                    const blob = new Blob([csvContent], { type: 'text/csv' });
+                    
+                    // Create a URL for the Blob
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Create a temporary anchor element
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'employees.csv';
+                    
+                    // Append to the document, click it, and remove it
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // Release the URL object
+                    URL.revokeObjectURL(url);
+                });
+            }
+        };
+        
+        // Initialize components when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize components
+            ThemeToggle.init();
+            DocumentManager.init();
+        });
+    </script>
+</body>
+</html>
