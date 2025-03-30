@@ -445,6 +445,25 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            cursor: pointer; /* Added to indicate sortable headers */
+            user-select: none; /* Prevent text selection when clicking */
+        }
+        
+        /* Added styles for sort indicators */
+        th.sorted-asc::after {
+            content: "▲";
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        th.sorted-desc::after {
+            content: "▼";
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        th:hover {
+            background-color: var(--gray-200);
         }
         
         tbody tr:hover td {
@@ -1598,24 +1617,32 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         /**
          * DataTrellis: An Enhanced CSV Explorer with Plugin Architecture
          * 
-         * A modular browser-based tool for viewing and analyzing CSV files
-         * Built with a constructivist approach to enable clear learning paths
-         * and extensibility through plugins.
+         * A modular browser-based tool for viewing and analyzing CSV files.
+         * Built to create a supportive structure for data exploration while
+         * encouraging growth through discoverable patterns and connections.
          */
         
         // ===================================================
         // APPLICATION REGISTRY - Central manager for components
         // ===================================================
         
+        /**
+         * AppRegistry: Central component management system
+         * 
+         * Maintains references to all system components and their relationships.
+         * Serves as the structural backbone of the application, enabling
+         * controlled access and modification of the component ecosystem.
+         */
         const AppRegistry = {
             /**
              * Registry of all system components and plugins
+             * Organized by category to create clear pathways for discovery
              */
             components: {
-                core: {},       // Core system components
-                plugins: {},    // Loaded plugins
-                views: {},      // Visualization views
-                extensions: {}  // UI extensions
+                core: {},       // Foundation systems that support basic functionality
+                plugins: {},    // Extension points for specialized capabilities
+                views: {},      // Different ways to visualize and interact with data
+                extensions: {}  // Additional capability modules
             },
             
             /**
@@ -1627,13 +1654,13 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
              * @returns {boolean} - Success status
              */
             register: function(type, id, component) {
-                // Ensure valid type
+                // Ensure valid component type
                 if (!this.components[type]) {
                     console.error(`Invalid component type: ${type}`);
                     return false;
                 }
                 
-                // Check for duplicate
+                // Check for duplicate registration
                 if (this.components[type][id]) {
                     console.error(`Component with ID "${id}" already registered in ${type}`);
                     return false;
@@ -1685,13 +1712,13 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                     return false;
                 }
                 
-                // Store component reference
+                // Store component reference for event
                 const component = this.components[type][id];
                 
                 // Remove component
                 delete this.components[type][id];
                 
-                // Notify listeners
+                // Notify listeners about removal
                 EventBus.publish('registry:componentRemoved', { type, id, component });
                 
                 return true;
@@ -1714,14 +1741,22 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // EVENT BUS - Communication between components
         // ===================================================
         
+        /**
+         * EventBus: Component communication system
+         * 
+         * Enables decoupled interaction between system parts through
+         * a publish-subscribe pattern. Components can exchange information
+         * without direct dependencies, creating a flexible architecture.
+         */
         const EventBus = {
             /**
-             * Map of event listeners
+             * Storage for event listeners organized by message type
              */
             listeners: {},
             
             /**
              * Subscribe to an event
+             * Similar to how plants "subscribe" to sunlight by growing toward it
              * 
              * @param {string} event - Event name
              * @param {Function} callback - Event handler
@@ -1736,7 +1771,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                 // Add callback to listeners
                 this.listeners[event].push(callback);
                 
-                // Return subscription object
+                // Return subscription object with unsubscribe capability
                 return {
                     unsubscribe: () => {
                         this.listeners[event] = this.listeners[event].filter(
@@ -1748,17 +1783,18 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             
             /**
              * Publish an event with data
+             * Like a plant releasing pollen that affects other plants
              * 
              * @param {string} event - Event name
              * @param {*} data - Event data
              */
             publish: function(event, data) {
-                // Skip if no listeners
+                // Skip if no listeners for this event
                 if (!this.listeners[event]) {
                     return;
                 }
                 
-                // Notify all listeners
+                // Notify all listeners with the event data
                 this.listeners[event].forEach(callback => {
                     try {
                         callback(data);
@@ -1783,24 +1819,30 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // APP STATE - Core data management
         // ===================================================
         
+        /**
+         * AppState: Central data management system
+         * 
+         * Maintains the application's data state and coordinates updates.
+         * Like the soil in a garden, it provides nutrients (data) to all components.
+         */
         const AppState = {
             /**
              * Current application state
              */
             state: {
-                // Collection of loaded files
+                // Collection of loaded files (plants in our garden)
                 files: [],
                 
-                // Index of currently active file
+                // Index of currently active file (which plant we're tending)
                 activeFileIndex: -1,
                 
-                // Current search state
+                // Current search state (what we're looking for)
                 lastSearch: {
                     field: '',
                     term: ''
                 },
                 
-                // Current active view
+                // Current active view (how we're looking at our garden)
                 activeView: 'table'
             },
             
@@ -1837,6 +1879,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             
             /**
              * Add a file to the collection
+             * Similar to planting a new seed in the garden
              * 
              * @param {Object} file - File object
              * @returns {number} - Index of the new file
@@ -1849,7 +1892,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                     this.state.activeFileIndex = 0;
                 }
                 
-                // Notify listeners
+                // Notify listeners about the new file
                 EventBus.publish('state:fileAdded', { 
                     file, 
                     index: this.state.files.length - 1 
@@ -1997,6 +2040,13 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // THEME MANAGER - Handle theme switching
         // ===================================================
         
+        /**
+         * ThemeManager: Visual theme control system
+         * 
+         * Manages light and dark themes, adapting the interface
+         * to different environmental conditions like plants
+         * adapting to day and night cycles.
+         */
         const ThemeManager = {
             /**
              * Initialize the theme manager
@@ -2005,7 +2055,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                 // Register with app registry
                 AppRegistry.register('core', 'themeManager', this);
                 
-                // Check for saved theme
+                // Check for saved theme preference
                 const savedTheme = localStorage.getItem('datatrellis-theme');
                 if (savedTheme === 'dark') {
                     this.enableDarkTheme();
@@ -2036,7 +2086,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             },
             
             /**
-             * Enable dark theme
+             * Enable dark theme (night mode)
              */
             enableDarkTheme: function() {
                 document.documentElement.classList.add('dark-theme');
@@ -2051,7 +2101,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             },
             
             /**
-             * Enable light theme
+             * Enable light theme (day mode)
              */
             enableLightTheme: function() {
                 document.documentElement.classList.remove('dark-theme');
@@ -2071,6 +2121,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // UTILITIES - Helper functions
         // ===================================================
         
+        /**
+         * Utils: Common utility functions
+         * 
+         * Like garden tools, these functions make common tasks easier
+         * and more consistent throughout the application.
+         */
         const Utils = {
             /**
              * Initialize the utilities system
@@ -2211,8 +2267,6 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             },
             
             /**
-             * Generate a filename for download based on original
-             /**
              * Generate a filename for download based on original name
              * 
              * @param {string} originalName - Original file name
@@ -2291,6 +2345,38 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                 }
                 
                 return element;
+            },
+            
+            /**
+             * Sort data by a specific field
+             * 
+             * @param {Array} data - The data array to sort
+             * @param {string} field - Field to sort by
+             * @param {string} direction - Sort direction ('asc' or 'desc')
+             * @returns {Array} - Sorted data array
+             */
+            sortData: function(data, field, direction = 'asc') {
+                // Create a copy of the data to avoid modifying the original
+                return [...data].sort((a, b) => {
+                    const valueA = a[field];
+                    const valueB = b[field];
+                    
+                    // Handle numeric values
+                    if (this.isNumeric(valueA) && this.isNumeric(valueB)) {
+                        const numA = this.parseNumeric(valueA);
+                        const numB = this.parseNumeric(valueB);
+                        return direction === 'asc' ? numA - numB : numB - numA;
+                    }
+                    
+                    // Handle string values (case-insensitive)
+                    const strA = String(valueA || '').toLowerCase();
+                    const strB = String(valueB || '').toLowerCase();
+                    
+                    // Use localeCompare for proper string comparison
+                    return direction === 'asc' 
+                        ? strA.localeCompare(strB) 
+                        : strB.localeCompare(strA);
+                });
             }
         };
         
@@ -2299,6 +2385,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // CSV PROCESSING - Parsing and manipulation
         // ===================================================
         
+        /**
+         * CsvProcessor: Data transformation system
+         * 
+         * Converts raw CSV text into structured data objects for analysis.
+         * Like extracting nutrients from soil, it makes the raw data useful.
+         */
         const CsvProcessor = {
             /**
              * Initialize the CSV processor system
@@ -2425,6 +2517,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // FILTER SYSTEM - Search and filtering
         // ===================================================
         
+        /**
+         * FilterSystem: Data refinement tools
+         * 
+         * Controls which records are displayed based on user criteria.
+         * Like pruning unwanted growth to focus on the most valuable elements.
+         */
         const FilterSystem = {
             /**
              * Initialize the filter system
@@ -2526,6 +2624,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // DOM UI MANAGER - User interface management
         // ===================================================
         
+        /**
+         * DomUI: User interface management system
+         * 
+         * Coordinates updates to the DOM based on system state.
+         * Like a gardener arranging plants for optimal visibility and access.
+         */
         const DomUI = {
             /**
              * UI element references
@@ -3010,6 +3114,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             
             /**
              * Update table with current data from active file
+             * Now with sorting capability for each column header
              */
             updateTable: function() {
                 // Only update if table view is active
@@ -3031,9 +3136,46 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                 const activeFile = AppState.getActiveFile();
                 if (!activeFile) return;
                 
-                // Add headers
+                // Create sort state if it doesn't exist
+                if (!activeFile.sortState) {
+                    activeFile.sortState = {
+                        field: null,
+                        direction: 'asc'
+                    };
+                }
+                
+                // Add headers with sort functionality
                 activeFile.headers.forEach(header => {
-                    thead.appendChild(Utils.createElement('th', {}, header));
+                    // Check if this column is the currently sorted one
+                    const isSorted = activeFile.sortState.field === header;
+                    
+                    // Create header with sort indicator and click handler
+                    const headerCell = Utils.createElement('th', {
+                        class: isSorted ? `sorted-${activeFile.sortState.direction}` : '',
+                        onclick: () => {
+                            // If already sorting by this column, toggle direction
+                            if (activeFile.sortState.field === header) {
+                                activeFile.sortState.direction = 
+                                    activeFile.sortState.direction === 'asc' ? 'desc' : 'asc';
+                            } else {
+                                // Set as new sort column with default ascending direction
+                                activeFile.sortState.field = header;
+                                activeFile.sortState.direction = 'asc';
+                            }
+                            
+                            // Sort the data
+                            activeFile.currentData = Utils.sortData(
+                                activeFile.currentData,
+                                header,
+                                activeFile.sortState.direction
+                            );
+                            
+                            // Update the table to show sorted data
+                            this.updateTable();
+                        }
+                    }, header);
+                    
+                    thead.appendChild(headerCell);
                 });
                 
                 // Add data rows
@@ -3082,6 +3224,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                 // Add filter info if available
                 if (AppState.state.lastSearch.field && AppState.state.lastSearch.term) {
                     summaryText += ` (filtered by "${AppState.state.lastSearch.field}": "${AppState.state.lastSearch.term}")`;
+                }
+                
+                // Add sort info if available
+                if (activeFile.sortState && activeFile.sortState.field) {
+                    const direction = activeFile.sortState.direction === 'asc' ? 'ascending' : 'descending';
+                    summaryText += ` (sorted by "${activeFile.sortState.field}": ${direction})`;
                 }
                 
                 this.elements['results-summary'].textContent = summaryText;
@@ -3238,6 +3386,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // FILE HANDLER - Upload, reading, and download
         // ===================================================
         
+        /**
+         * FileHandler: Data import and export system
+         * 
+         * Manages the input and output of data files.
+         * Like bringing seeds into the garden and harvesting the results.
+         */
         const FileHandler = {
             /**
              * Initialize the file handler system
@@ -3333,7 +3487,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
                                     headers: result.headers,
                                     rawData: result.data,
                                     currentData: result.data,
-                                    columnTypes: CsvProcessor.detectColumnTypes(result.headers, result.data)
+                                    columnTypes: CsvProcessor.detectColumnTypes(result.headers, result.data),
+                                    // Initialize sort state
+                                    sortState: {
+                                        field: null,
+                                        direction: 'asc'
+                                    }
                                 };
                                 
                                 resolve(fileData);
@@ -3421,6 +3580,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // VIEW CONTROLLER - Manage different data views
         // ===================================================
         
+        /**
+         * ViewController: View management system
+         * 
+         * Coordinates different ways of displaying data.
+         * Like different lenses that highlight different aspects of the garden.
+         */
         const ViewController = {
             /**
              * Initialize the view controller system
@@ -3593,6 +3758,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // PLUGIN MANAGER - Handle plugins
         // ===================================================
         
+        /**
+         * PluginManager: Extension system
+         * 
+         * Manages the installation and loading of plugins.
+         * Like adding specialized tools to enhance the garden.
+         */
         const PluginManager = {
             /**
              * Mapping of plugin IDs to script elements
@@ -3879,6 +4050,12 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
         // APPLICATION - Core functionality
         // ===================================================
         
+        /**
+         * App: Main application controller
+         * 
+         * Coordinates all components and manages the overall application flow.
+         * Like the gardener who oversees the entire garden ecosystem.
+         */
         const App = {
             /**
              * Initialize the application
@@ -3956,7 +4133,7 @@ sandbox.registerPlugin(MyVisualizationPlugin);</pre>
             App.init();
             
             // Log initialization message
-            console.log('DataTrellis initialized');
+            console.log('DataTrellis initialized - Ready to cultivate insights');
         });
     </script>
 </body>
