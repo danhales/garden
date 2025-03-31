@@ -3,30 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NodePad v0.1.0</title>
+    <title>NodePad v1.0.0</title>
     <!-- 
-        🌱 NodePad: Nonlinear Day Tracker
+        🌱 NodePad: Nonlinear Knowledge Network
+        
         Version History:
-        v0.0.1 - Initial implementation with popup editor and basic node display
-        v0.0.2 - Attempted to refactor with Node class architecture (contained bugs)
-        v0.0.3 - Fixed edge rendering bug and simplified architecture
-        v0.0.4 - Restructured code with proper DocTrellis versioning and modularized components
-        v0.0.5 - Fixed node interaction bug with dragging different nodes
-        v0.0.6 - Implemented template-based node rendering system
-        v0.0.7 - Added ability to edit node names
-        v0.1.0 - First minor version with stable core features and cleaned documentation
+        v1.0.0 - Initial implementation with constructivist architecture and knot-compacted code
         
         DocTrellis Feature Status:
-        🌱 Core UI Layout - Seedling - Basic split-screen layout with network view and editor
+        🌱 Core Architecture - Seedling - Constructivist template system with metadata-driven design
         🌱 Node Management - Seedling - Create, select, edit, and drag nodes
-        🌱 Edge Connections - Seedling - Simple connections between nodes
-        🪴 Node Customization - Potted Plant - Node styling and naming capabilities
+        🌱 Edge Connections - Seedling - Connections between nodes
+        🌱 Network View - Seedling - Canvas-based visualization
         🌱 Export/Import - Seedling - JSON and CSV export functionality
     -->
     <style>
-        /* 🌱 Core styles */
+        /* 🌱 META System: Constructivist CSS Architecture */
+        
+        /* Base Variables - Single Source of Truth */
+        :root {
+            /* Color Palette */
+            --color-bg: #fafafa;
+            --color-surface: #ffffff;
+            --color-surface-alt: #f5f5f5;
+            --color-border: #dddddd;
+            --color-text: #333333;
+            --color-text-muted: #666666;
+            --color-primary: #1890ff;
+            --color-primary-dark: #096dd9;
+            --color-success: #52c41a;
+            --color-warning: #faad14;
+            --color-error: #f5222d;
+            
+            /* Spacing System */
+            --space-unit: 8px;
+            --space-xs: calc(var(--space-unit) * 0.5);  /* 4px */
+            --space-sm: var(--space-unit);              /* 8px */
+            --space-md: calc(var(--space-unit) * 2);    /* 16px */
+            --space-lg: calc(var(--space-unit) * 3);    /* 24px */
+            --space-xl: calc(var(--space-unit) * 4);    /* 32px */
+            
+            /* Typography */
+            --font-family: Arial, sans-serif;
+            --font-size-base: 14px;
+            --font-size-sm: 12px;
+            --font-size-lg: 16px;
+            --font-weight-normal: 400;
+            --font-weight-bold: 600;
+            --line-height: 1.6;
+            
+            /* Layout */
+            --border-radius-sm: 4px;
+            --border-radius-md: 6px;
+            --border-radius-lg: 8px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            
+            /* Node Dimensions */
+            --node-min-width: 150px;
+            --node-min-height: 120px;
+            --node-header-height: 30px;
+        }
+        
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height);
+            color: var(--color-text);
+            background-color: var(--color-bg);
             margin: 0;
             padding: 0;
             display: flex;
@@ -35,10 +89,11 @@
             overflow: hidden;
         }
         
+        /* 🌱 Application Layout */
         .header {
-            background-color: #f5f5f5;
-            padding: 10px 20px;
-            border-bottom: 1px solid #ddd;
+            background-color: var(--color-surface);
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -46,10 +101,20 @@
         
         .title {
             margin: 0;
-            font-size: 20px;
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
         }
         
-        /* 🌱 Split view layout */
+        .version {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-muted);
+            font-weight: var(--font-weight-normal);
+            margin-left: var(--space-sm);
+        }
+        
         .main-container {
             display: flex;
             flex: 1;
@@ -60,8 +125,7 @@
             flex: 1;
             position: relative;
             overflow: hidden;
-            background-color: #fafafa;
-            border-right: 1px solid #ddd;
+            background-color: var(--color-bg);
         }
         
         #network-canvas {
@@ -74,141 +138,147 @@
             width: 40%;
             display: flex;
             flex-direction: column;
-            background-color: white;
-            padding: 0;
+            background-color: var(--color-surface);
+            border-left: 1px solid var(--color-border);
             overflow: hidden;
         }
         
         /* 🌱 Controls */
         .controls {
             display: flex;
-            gap: 10px;
+            gap: var(--space-sm);
         }
         
         button {
-            padding: 8px 12px;
-            background-color: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: var(--space-sm) var(--space-md);
+            background-color: var(--color-surface-alt);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
+            font-size: var(--font-size-base);
+            transition: background-color var(--transition-fast);
         }
         
         button:hover {
-            background-color: #e5e5e5;
+            background-color: var(--color-border);
         }
         
         button:active {
-            background-color: #d5d5d5;
+            background-color: var(--color-border);
         }
         
         button.primary {
-            background-color: #1890ff;
+            background-color: var(--color-primary);
             color: white;
-            border-color: #1890ff;
+            border-color: var(--color-primary);
         }
         
         button.primary:hover {
-            background-color: #40a9ff;
+            background-color: var(--color-primary-dark);
         }
         
-        button.primary:active {
-            background-color: #096dd9;
-        }
-        
-        /* 🌱 Editor styles */
+        /* 🌱 Editor Styles */
         .editor-header {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            background-color: #f9f9f9;
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
+            background-color: var(--color-surface-alt);
         }
         
         .editor-title {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-            font-weight: bold;
+            margin: 0 0 var(--space-xs) 0;
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
         }
         
         .editor-subtitle {
-            color: #666;
-            font-size: 14px;
+            color: var(--color-text-muted);
+            font-size: var(--font-size-base);
             margin: 0;
         }
         
         .editor-content {
             flex: 1;
-            padding: 15px;
+            padding: var(--space-md);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
         
-        #node-name {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 10px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        
-        #node-name:focus {
-            border-color: #4d90fe;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(77, 144, 254, 0.2);
+        .editor-placeholder {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: var(--space-lg);
         }
         
         .name-label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #666;
+            margin-bottom: var(--space-xs);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text-muted);
+        }
+        
+        #node-name {
+            width: 100%;
+            padding: var(--space-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-sm);
+            font-family: inherit;
+            font-size: var(--font-size-base);
+            margin-bottom: var(--space-md);
+            transition: border-color var(--transition-fast);
+        }
+        
+        #node-name:focus {
+            border-color: var(--color-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
         }
         
         #node-content {
             flex: 1;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: var(--space-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-sm);
             font-family: inherit;
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: var(--font-size-base);
+            line-height: var(--line-height);
             resize: none;
-            margin-bottom: 15px;
+            margin-bottom: var(--space-md);
         }
         
         #node-content:focus {
-            border-color: #4d90fe;
+            border-color: var(--color-primary);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(77, 144, 254, 0.2);
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
         }
         
         .editor-actions {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
+            align-items: center;
         }
         
         .size-controls {
             display: flex;
-            gap: 15px;
+            gap: var(--space-md);
         }
         
         .dimension-control {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: var(--space-xs);
         }
         
         .dimension-label {
             display: flex;
             align-items: center;
-            font-size: 16px;
-            margin-right: 5px;
+            font-size: var(--font-size-lg);
+            margin-right: var(--space-xs);
         }
         
         .size-btn {
@@ -218,46 +288,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            background-color: #f5f5f5;
+            font-size: var(--font-size-lg);
         }
         
-        .editor-placeholder {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-style: italic;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        /* 🌱 Status indicator */
+        /* 🌱 Status Indicator */
         .status {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            bottom: var(--space-sm);
+            left: var(--space-sm);
             background: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #555;
-        }
-        
-        /* 🌱 Version indicator */
-        .version {
-            font-size: 12px;
-            color: #999;
-            margin-left: 10px;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-base);
+            color: var(--color-text-muted);
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 class="title">NodePad <span class="version">v0.1.0</span></h1>
+        <h1 class="title">📝 NodePad <span class="version">v1.0.0</span></h1>
         <div class="controls">
-            <button id="add-node-btn">Add Connected Node</button>
+            <button id="add-node-btn">Add Node</button>
             <button id="export-json-btn">Export JSON</button>
             <button id="export-csv-btn">Export CSVs</button>
         </div>
@@ -304,7 +355,7 @@
                             <button class="size-btn" id="toggle-style">↺</button>
                         </div>
                     </div>
-                    <button id="update-node-btn" class="primary">Update Node ✏️</button>
+                    <button id="update-node-btn" class="primary">Update Node</button>
                 </div>
             </div>
         </div>
@@ -312,931 +363,1063 @@
 
     <script>
         /**
-         * 🌱 NodePad: Nonlinear Day Tracker
+         * 🌱 NodePad: Nonlinear Knowledge Network
          * 
-         * A simple tool for creating interconnected notes in a network view
-         * with a node-based interface for nonlinear day tracking.
+         * A constructivist approach to knowledge mapping that enables
+         * interconnected thoughts through a visual network interface.
          * 
-         * Flow:
-         * 1. Page loads → initialize canvas and UI
-         * 2. Create initial welcome node
-         * 3. User selects node → Editor shows node content
-         * 4. User updates content → Content saved to node
-         * 5. User adds connected node → New node created with connection
-         * 6. User exports data → JSON or CSV files generated
+         * This implementation follows constructivist principles:
+         * - Code as a learning artifact
+         * - Learning through construction
+         * - Explicit over implicit patterns
+         * - Self-documenting architecture
          * 
-         * Version History:
-         * v0.0.1 - Initial implementation with popup editor and basic node display
-         * v0.0.2 - Attempted to refactor with Node class architecture (contained bugs)
-         * v0.0.3 - Fixed edge rendering bug and simplified architecture
-         * v0.0.4 - Restructured code with proper DocTrellis versioning and modularized components
-         * v0.0.5 - Fixed node interaction bug with dragging different nodes
-         * v0.0.6 - Implemented template-based node rendering system
-         * v0.0.7 - Added ability to edit node names
-         * v0.1.0 - First minor version with stable core features and cleaned documentation
+         * We use the META framework:
+         * - Metadata: Explicit knowledge representation
+         * - Extraction: Atomic understanding units
+         * - Templates: Consistent patterns
+         * - Assembly: Clear learning pathways
+         * 
+         * Version: 1.0.0
          */
+        
         document.addEventListener('DOMContentLoaded', function() {
+            // =====================================================================
+            // 🌱 META-SYSTEM: Application Metadata and Configuration
+            // =====================================================================
+
             /**
-             * 🌱 NodePad Application
-             * 
-             * Main application container that initializes and manages all components.
+             * @metadata Defines application-wide constants and configuration
+             * A single source of truth for all configurable parameters
              */
-            const NodePad = (function() {
-                // Configuration and constants
-                const CONFIG = {
-                    debug: true,
-                    version: '0.1.0',
-                    node: {
-                        defaultWidth: 250,
-                        defaultHeight: 200,
+            const META = {
+                /** Application version information */
+                version: {
+                    number: '1.0.0',
+                    name: 'Constructivist Foundation',
+                    date: '2025-03-31'
+                },
+                
+                /** Debug configuration */
+                debug: {
+                    enabled: true,
+                    prefix: '🔍 NodePad',
+                    levels: {
+                        info: '📘',
+                        warn: '⚠️',
+                        error: '❌',
+                        success: '✅'
+                    }
+                },
+                
+                /** Node configuration */
+                node: {
+                    defaults: {
+                        width: 250,
+                        height: 200,
+                        style: 'standard',
+                        content: ''
+                    },
+                    constraints: {
                         minWidth: 150,
                         minHeight: 120,
+                        maxWidth: 500,
+                        maxHeight: 400,
+                        resizeStep: 20
+                    },
+                    rendering: {
                         headerHeight: 30,
-                        textPadding: 20,
+                        textPadding: 15,
                         lineHeight: 20,
-                        resizeStep: 20,
-                        defaultStyle: 'standard'
+                        borderRadius: 4
                     }
-                };
+                },
                 
-                // Dom element references
-                const DOM = {
-                    canvas: document.getElementById('network-canvas'),
-                    addNodeBtn: document.getElementById('add-node-btn'),
-                    exportJsonBtn: document.getElementById('export-json-btn'),
-                    exportCsvBtn: document.getElementById('export-csv-btn'),
-                    nodeName: document.getElementById('node-name'),
-                    nodeContent: document.getElementById('node-content'),
-                    updateNodeBtn: document.getElementById('update-node-btn'),
-                    editorTitle: document.getElementById('editor-title'),
-                    editorSubtitle: document.getElementById('editor-subtitle'),
-                    editorPlaceholder: document.getElementById('editor-placeholder'),
-                    statusEl: document.getElementById('status'),
-                    heightDecreaseBtn: document.getElementById('height-decrease'),
-                    heightIncreaseBtn: document.getElementById('height-increase'),
-                    widthDecreaseBtn: document.getElementById('width-decrease'),
-                    widthIncreaseBtn: document.getElementById('width-increase'),
-                    toggleStyleBtn: document.getElementById('toggle-style')
-                };
-                
-                const ctx = DOM.canvas.getContext('2d');
-                
-                // Application state
-                let state = {
-                    graph: {
-                        nodes: [],
-                        edges: []
+                /** Available node rendering styles */
+                nodeStyles: {
+                    standard: {
+                        id: 'standard',
+                        name: 'Standard',
+                        colors: {
+                            background: '#ffffff',
+                            selectedBackground: '#e6f7ff',
+                            header: '#f5f5f5',
+                            selectedHeader: '#bae7ff',
+                            border: '#d9d9d9',
+                            selectedBorder: '#1890ff',
+                            text: '#000000'
+                        }
                     },
-                    ui: {
-                        selectedNode: null,
-                        isDragging: false,
-                        draggedNode: null, // 🐜 Track which node is being dragged separately from selection
-                        dragOffsetX: 0,
-                        dragOffsetY: 0
-                    },
-                    counters: {
-                        nextNodeId: 1,
-                        nextEdgeId: 1
-                    }
-                };
-                
-                /**
-                 * 🌱 Debug Utility
-                 * 
-                 * Handles debug logging with consistent formatting
-                 */
-                const Debug = {
-                    log: function(message) {
-                        if (CONFIG.debug) {
-                            console.log(`🐜 NodePad v${CONFIG.version}: ${message}`);
+                    minimal: {
+                        id: 'minimal',
+                        name: 'Minimal',
+                        colors: {
+                            background: '#f8f9fa',
+                            selectedBackground: '#e3f2fd',
+                            header: '#edf2f7',
+                            selectedHeader: '#bbdefb',
+                            border: '#cbd5e0',
+                            selectedBorder: '#64b5f6',
+                            text: '#1a202c'
                         }
                     }
-                };
+                },
                 
-                /**
-                 * 🌱 NodeRenderer
-                 * 
-                 * Provides templates and utilities for node rendering
-                 */
-                const NodeRenderer = {
-                    /**
-                     * Collection of node style templates
-                     */
-                    templates: {
-                        standard: {
-                            colors: {
-                                background: '#ffffff',
-                                selectedBackground: '#e6f7ff',
-                                header: '#f5f5f5',
-                                selectedHeader: '#bae7ff',
-                                border: '#d9d9d9',
-                                selectedBorder: '#1890ff',
-                                text: '#000000',
-                                hint: '#1890ff'
-                            },
-                            render: function(node, ctx, options) {
-                                const { isSelected } = options;
-                                const colors = this.colors;
-                                
-                                // Draw node background with shadow for depth
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-                                ctx.shadowBlur = 5;
-                                ctx.shadowOffsetX = 2;
-                                ctx.shadowOffsetY = 2;
-                                
-                                ctx.fillStyle = isSelected ? colors.selectedBackground : colors.background;
-                                ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
-                                ctx.lineWidth = isSelected ? 2 : 1;
-                                
-                                // Draw main rectangle (with rounded corners)
-                                ctx.beginPath();
-                                NodeRenderer.utils.roundRect(ctx, node.x, node.y, node.width, node.height, 4);
-                                ctx.fill();
-                                ctx.stroke();
-                                
-                                // Reset shadow for other elements
-                                ctx.shadowColor = 'transparent';
-                                ctx.shadowBlur = 0;
-                                ctx.shadowOffsetX = 0;
-                                ctx.shadowOffsetY = 0;
-                                
-                                // Draw header
-                                ctx.fillStyle = isSelected ? colors.selectedHeader : colors.header;
-                                ctx.beginPath();
-                                NodeRenderer.utils.roundRect(ctx, node.x, node.y, node.width, CONFIG.node.headerHeight, [4, 4, 0, 0]);
-                                ctx.fill();
-                                
-                                ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
-                                ctx.lineWidth = 1;
-                                ctx.beginPath();
-                                ctx.moveTo(node.x, node.y + CONFIG.node.headerHeight);
-                                ctx.lineTo(node.x + node.width, node.y + CONFIG.node.headerHeight);
-                                ctx.stroke();
-                                
-                                // Draw header text with name (if available) or ID
-                                ctx.fillStyle = colors.text;
-                                ctx.font = 'bold 14px Arial';
-                                const displayName = node.name || node.id;
-                                ctx.fillText(displayName, node.x + CONFIG.node.textPadding, node.y + CONFIG.node.headerHeight - 10);
-                                
-                                // Draw content text with word wrapping
-                                ctx.font = '14px Arial';
-                                
-                                // Wrap and render text
-                                const maxWidth = node.width - (CONFIG.node.textPadding * 2);
-                                const wrappedText = NodeRenderer.utils.wrapText(ctx, node.content, maxWidth);
-                                
-                                wrappedText.forEach((line, index) => {
-                                    const y = node.y + CONFIG.node.headerHeight + CONFIG.node.textPadding + (index * CONFIG.node.lineHeight);
-                                    // Only draw if within node bounds
-                                    if (y < node.y + node.height - CONFIG.node.textPadding) {
-                                        ctx.fillText(line, node.x + CONFIG.node.textPadding, y);
-                                    }
-                                });
-                                
-                                // Indicate if content is truncated
-                                const contentHeight = wrappedText.length * CONFIG.node.lineHeight;
-                                const maxVisibleHeight = node.height - CONFIG.node.headerHeight - (CONFIG.node.textPadding * 2);
-                                
-                                if (contentHeight > maxVisibleHeight) {
-                                    ctx.fillStyle = '#999999';
-                                    ctx.fillText('...', node.x + CONFIG.node.textPadding, node.y + node.height - CONFIG.node.textPadding);
-                                }
-                                
-                                // Draw edit indicator in the corner for better UX
-                                if (isSelected) {
-                                    ctx.fillStyle = colors.hint;
-                                    ctx.font = '12px Arial';
-                                    ctx.fillText('✎ Click to edit', node.x + node.width - 85, node.y + node.height - 10);
-                                }
-                            }
+                /** Edge configuration */
+                edge: {
+                    style: {
+                        color: '#d9d9d9',
+                        width: 1,
+                        selectedColor: '#1890ff',
+                        selectedWidth: 2
+                    }
+                },
+                
+                /** Export configuration */
+                export: {
+                    formats: {
+                        json: {
+                            extension: 'json',
+                            contentType: 'application/json'
                         },
-                        // Could add more templates here for different node types
-                        minimal: {
-                            colors: {
-                                background: '#f8f9fa',
-                                selectedBackground: '#e3f2fd',
-                                header: '#edf2f7',
-                                selectedHeader: '#bbdefb',
-                                border: '#cbd5e0',
-                                selectedBorder: '#64b5f6',
-                                text: '#1a202c',
-                                hint: '#2196f3'
-                            },
-                            render: function(node, ctx, options) {
-                                const { isSelected } = options;
-                                const colors = this.colors;
-                                
-                                // Simpler shadow
-                                ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-                                ctx.shadowBlur = 3;
-                                ctx.shadowOffsetX = 1;
-                                ctx.shadowOffsetY = 1;
-                                
-                                // Fill and stroke
-                                ctx.fillStyle = isSelected ? colors.selectedBackground : colors.background;
-                                ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
-                                ctx.lineWidth = isSelected ? 2 : 1;
-                                
-                                // Draw main rectangle with more rounded corners
-                                ctx.beginPath();
-                                NodeRenderer.utils.roundRect(ctx, node.x, node.y, node.width, node.height, 6);
-                                ctx.fill();
-                                ctx.stroke();
-                                
-                                // Reset shadow
-                                ctx.shadowColor = 'transparent';
-                                ctx.shadowBlur = 0;
-                                ctx.shadowOffsetX = 0;
-                                ctx.shadowOffsetY = 0;
-                                
-                                // Simplified header (just a line)
-                                ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
-                                ctx.beginPath();
-                                ctx.moveTo(node.x + 10, node.y + CONFIG.node.headerHeight);
-                                ctx.lineTo(node.x + node.width - 10, node.y + CONFIG.node.headerHeight);
-                                ctx.stroke();
-                                
-                                // ID as small text in corner
-                                ctx.fillStyle = colors.text;
-                                ctx.font = '12px Arial';
-                                const displayName = node.name || node.id;
-                                ctx.fillText(displayName, node.x + 10, node.y + CONFIG.node.headerHeight - 10);
-                                
-                                // Content text
-                                ctx.font = '14px Arial';
-                                const maxWidth = node.width - 20;
-                                const wrappedText = NodeRenderer.utils.wrapText(ctx, node.content, maxWidth);
-                                
-                                wrappedText.forEach((line, index) => {
-                                    const y = node.y + CONFIG.node.headerHeight + 15 + (index * CONFIG.node.lineHeight);
-                                    if (y < node.y + node.height - 15) {
-                                        ctx.fillText(line, node.x + 10, y);
-                                    }
-                                });
-                                
-                                // Indicator for truncated content
-                                const contentHeight = wrappedText.length * CONFIG.node.lineHeight;
-                                if (contentHeight > node.height - CONFIG.node.headerHeight - 30) {
-                                    ctx.fillStyle = '#999999';
-                                    ctx.fillText('...', node.x + 10, node.y + node.height - 10);
-                                }
-                                
-                                // Small indicator if selected
-                                if (isSelected) {
-                                    ctx.fillStyle = colors.hint;
-                                    const indicatorSize = 6;
-                                    ctx.beginPath();
-                                    ctx.arc(node.x + node.width - 10, node.y + 10, indicatorSize, 0, Math.PI * 2);
-                                    ctx.fill();
-                                }
-                            }
-                        }
-                    },
-                    
-                    /**
-                     * Utility functions for rendering
-                     */
-                    utils: {
-                        /**
-                         * Helper function for drawing rounded rectangles
-                         */
-                        roundRect: function(ctx, x, y, width, height, radius) {
-                            if (typeof radius === 'number') {
-                                radius = {tl: radius, tr: radius, br: radius, bl: radius};
-                            } else if (Array.isArray(radius)) {
-                                const [tl, tr, br, bl] = [...radius, ...Array(4-radius.length).fill(0)];
-                                radius = {tl, tr, br, bl};
-                            } else {
-                                radius = {tl: 0, tr: 0, br: 0, bl: 0};
-                            }
-                            
-                            ctx.moveTo(x + radius.tl, y);
-                            ctx.lineTo(x + width - radius.tr, y);
-                            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-                            ctx.lineTo(x + width, y + height - radius.br);
-                            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-                            ctx.lineTo(x + radius.bl, y + height);
-                            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-                            ctx.lineTo(x, y + radius.tl);
-                            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+                        nodeCsv: {
+                            extension: 'csv',
+                            contentType: 'text/csv',
+                            filename: 'nodepad-nodes.csv'
                         },
-                        
-                        /**
-                         * Helper function to wrap text
-                         */
-                        wrapText: function(ctx, text, maxWidth) {
-                            if (!text) return [];
-                            
-                            const lines = [];
-                            
-                            // Handle multi-paragraph text
-                            const paragraphs = text.split('\n');
-                            
-                            paragraphs.forEach(paragraph => {
-                                if (paragraph === '') {
-                                    // Empty paragraph, just add an empty line
-                                    lines.push('');
-                                    return;
-                                }
-                                
-                                const words = paragraph.split(' ');
-                                let currentLine = '';
-                                
-                                words.forEach(word => {
-                                    const testLine = currentLine ? currentLine + ' ' + word : word;
-                                    const metrics = ctx.measureText(testLine);
-                                    
-                                    if (metrics.width > maxWidth && currentLine !== '') {
-                                        lines.push(currentLine);
-                                        currentLine = word;
-                                    } else {
-                                        currentLine = testLine;
-                                    }
-                                });
-                                
-                                // Add the last line of this paragraph
-                                if (currentLine) {
-                                    lines.push(currentLine);
-                                }
-                            });
-                            
-                            return lines;
+                        edgeCsv: {
+                            extension: 'csv',
+                            contentType: 'text/csv',
+                            filename: 'nodepad-edges.csv'
                         }
-                    },
-                    
-                    /**
-                     * Render a node using the appropriate template
-                     */
-                    renderNode: function(node, ctx, options = {}) {
-                        const template = this.templates[node.style] || this.templates.standard;
-                        template.render(node, ctx, options);
                     }
-                };
+                },
                 
-                /**
-                 * 🌱 Node Manager
-                 * 
-                 * Handles node creation, selection, and manipulation
-                 */
-                const NodeManager = {
-                    /**
-                     * Create initial welcome node
-                     */
-                    createInitialNode: function() {
-                        Debug.log("Creating initial node");
-                        
-                        const node = {
-                            id: `node-${state.counters.nextNodeId++}`,
-                            name: "Welcome Note", // Add a friendly name
-                            content: 'Welcome to NodePad!\n\nThis is your first note in your nonlinear day tracker.\n\n• Click this note to edit its content in the side panel\n• Change the node name to organize your thoughts\n• Select this note and click "Add Connected Node" to create a connected note\n• Drag nodes to rearrange them\n• Use the ↕️ and ↔️ controls to resize this node\n• Click 🎨 to change the node style\n\nStart organizing your thoughts and tasks in a way that makes sense to you!',
-                            x: DOM.canvas.width / 2 - CONFIG.node.defaultWidth / 2,
-                            y: DOM.canvas.height / 2 - CONFIG.node.defaultHeight / 2,
-                            width: CONFIG.node.defaultWidth,
-                            height: CONFIG.node.defaultHeight,
-                            style: CONFIG.node.defaultStyle // Track node style
-                        };
-                        
-                        state.graph.nodes.push(node);
-                        NodeManager.selectNode(node);
-                        Renderer.draw();
-                        
-                        // Show welcome message
-                        UIManager.updateStatus('Welcome to NodePad! Click the node to begin editing');
+                /** Templates for static text */
+                templates: {
+                    welcome: {
+                        nodeName: 'Welcome Note',
+                        nodeContent: 'Welcome to NodePad!\n\nThis is a space for your interconnected thoughts and ideas.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Use the controls to customize nodes\n\nStart organizing your knowledge network!'
                     },
-                    
-                    /**
-                     * Add a new node connected to the selected node
-                     */
-                    addConnectedNode: function() {
-                        Debug.log("Adding connected node");
-                        
-                        if (!state.ui.selectedNode) {
-                            UIManager.updateStatus('Please select a node first');
-                            return;
-                        }
-                        
-                        // Calculate position for new node (offset from selected)
-                        const x = state.ui.selectedNode.x + state.ui.selectedNode.width + 50;
-                        const y = state.ui.selectedNode.y;
-                        
-                        // Create a new node
-                        const newNode = {
-                            id: `node-${state.counters.nextNodeId++}`,
-                            name: "", // Empty name for new nodes
-                            content: '',
-                            x: x,
-                            y: y,
-                            width: CONFIG.node.defaultWidth,
-                            height: CONFIG.node.defaultHeight,
-                            style: CONFIG.node.defaultStyle // Track node style
-                        };
-                        
-                        // Add the node to the graph
-                        state.graph.nodes.push(newNode);
-                        
-                        // Create an edge connecting the selected node to the new node
-                        const edge = {
-                            id: `edge-${state.counters.nextEdgeId++}`,
-                            sourceId: state.ui.selectedNode.id,
-                            targetId: newNode.id
-                        };
-                        
-                        Debug.log(`Created edge: ${edge.id} from ${edge.sourceId} to ${edge.targetId}`);
-                        
-                        // Add the edge to the graph
-                        state.graph.edges.push(edge);
-                        
-                        // Select and edit the new node
-                        NodeManager.selectNode(newNode);
-                        
-                        // Update the display
-                        Renderer.draw();
-                        UIManager.updateStatus(`Created new node: ${newNode.id}`);
-                    },
-                    
-                    /**
-                     * Select a node and update the UI
-                     */
-                    selectNode: function(node) {
-                        Debug.log(`Selecting node: ${node ? node.id : 'none'}`);
-                        state.ui.selectedNode = node;
-                        
-                        if (node) {
-                            // Update editor
-                            UIManager.updateEditor(node);
-                            UIManager.updateStatus(`Selected: ${node.name || node.id}`);
-                        } else {
-                            // Clear editor
-                            UIManager.clearEditor();
-                            UIManager.updateStatus('Ready');
-                        }
-                        
-                        Renderer.draw();
-                    },
-                    
-                    /**
-                     * Find node at specific coordinates
-                     */
-                    findNodeAt: function(x, y) {
-                        // Search from front to back (later nodes appear on top)
-                        for (let i = state.graph.nodes.length - 1; i >= 0; i--) {
-                            const node = state.graph.nodes[i];
-                            if (x >= node.x && x <= node.x + node.width &&
-                                y >= node.y && y <= node.y + node.height) {
-                                return node;
-                            }
-                        }
-                        return null;
-                    },
-                    
-                    /**
-                     * Update node content and name from editor
-                     */
-                    updateNodeContent: function() {
-                        Debug.log("Updating node content and name");
-                        if (state.ui.selectedNode) {
-                            state.ui.selectedNode.content = DOM.nodeContent.value;
-                            state.ui.selectedNode.name = DOM.nodeName.value;
-                            Renderer.draw();
-                            UIManager.updateStatus(`Updated: ${state.ui.selectedNode.name || state.ui.selectedNode.id}`);
-                        }
-                    },
-                    
-                    /**
-                     * Resize a node in a specific dimension
-                     */
-                    resizeNode: function(dimension, delta) {
-                        if (!state.ui.selectedNode) return;
-                        
-                        Debug.log(`Resizing ${dimension} by ${delta}`);
-                        
-                        if (dimension === 'width') {
-                            state.ui.selectedNode.width = Math.max(CONFIG.node.minWidth, state.ui.selectedNode.width + delta);
-                        } else if (dimension === 'height') {
-                            state.ui.selectedNode.height = Math.max(CONFIG.node.minHeight, state.ui.selectedNode.height + delta);
-                        }
-                        
-                        Renderer.draw();
-                    },
-                    
-                    /**
-                     * Toggle the style of the selected node
-                     */
-                    toggleNodeStyle: function() {
-                        if (!state.ui.selectedNode) return;
-                        
-                        Debug.log(`Toggling style for node ${state.ui.selectedNode.id}`);
-                        
-                        // Get available styles
-                        const styles = Object.keys(NodeRenderer.templates);
-                        
-                        // Find current style index
-                        const currentIndex = styles.indexOf(state.ui.selectedNode.style);
-                        
-                        // Get next style (or circle back to first)
-                        const nextIndex = (currentIndex + 1) % styles.length;
-                        state.ui.selectedNode.style = styles[nextIndex];
-                        
-                        Renderer.draw();
-                        UIManager.updateStatus(`Changed node style to: ${state.ui.selectedNode.style}`);
-                    },
-                };
-                
-                /**
-                 * 🌱 Renderer
-                 * 
-                 * Handles all drawing operations on the canvas
-                 */
-                const Renderer = {
-                    /**
-                     * Draw everything on the canvas
-                     */
-                    draw: function() {
-                        Debug.log("Drawing canvas");
-                        
-                        // Clear the canvas
-                        ctx.clearRect(0, 0, DOM.canvas.width, DOM.canvas.height);
-                        
-                        // Draw all edges
-                        this.drawEdges();
-                        
-                        // Draw all nodes
-                        this.drawNodes();
-                    },
-                    
-                    /**
-                     * Draw all nodes
-                     */
-                    drawNodes: function() {
-                        Debug.log(`Drawing ${state.graph.nodes.length} nodes`);
-                        state.graph.nodes.forEach(node => {
-                            this.drawNode(node);
-                        });
-                    },
-                    
-                    /**
-                     * Draw a single node
-                     */
-                    drawNode: function(node) {
-                        const isSelected = node === state.ui.selectedNode;
-                        Debug.log(`Drawing node ${node.id} at (${node.x}, ${node.y})`);
-                        NodeRenderer.renderNode(node, ctx, { isSelected });
-                    },
-                    
-                    // Delete the old helper functions that are now in NodeRenderer.utils
-                    // They're replaced by the ones in NodeRenderer.utils
-                    
-                    /**
-                     * Draw all edges
-                     */
-                    drawEdges: function() {
-                        Debug.log(`Drawing ${state.graph.edges.length} edges`);
-                        
-                        ctx.strokeStyle = '#d9d9d9';
-                        ctx.lineWidth = 1;
-                        
-                        state.graph.edges.forEach(edge => {
-                            // Find the nodes for this edge
-                            const sourceNode = state.graph.nodes.find(n => n.id === edge.sourceId);
-                            const targetNode = state.graph.nodes.find(n => n.id === edge.targetId);
-                            
-                            // Verify both nodes exist before drawing
-                            if (!sourceNode || !targetNode) {
-                                Debug.log(`⚠️ Edge ${edge.id} has invalid source or target: ${edge.sourceId} -> ${edge.targetId}`);
-                                return;
-                            }
-                            
-                            Debug.log(`Drawing edge ${edge.id}: ${sourceNode.id} -> ${targetNode.id}`);
-                            
-                            // Calculate connection points from center of nodes
-                            const sourceX = sourceNode.x + sourceNode.width / 2;
-                            const sourceY = sourceNode.y + sourceNode.height / 2;
-                            const targetX = targetNode.x + targetNode.width / 2;
-                            const targetY = targetNode.y + targetNode.height / 2;
-                            
-                            // Draw the connection line
-                            ctx.beginPath();
-                            ctx.moveTo(sourceX, sourceY);
-                            ctx.lineTo(targetX, targetY);
-                            ctx.stroke();
-                        });
+                    status: {
+                        ready: 'Ready',
+                        selected: nodeId => `Selected: ${nodeId}`,
+                        created: nodeId => `Created node: ${nodeId}`,
+                        updated: nodeId => `Updated: ${nodeId}`,
+                        exported: format => `Exported ${format} file`,
+                        resized: dimension => `Resized ${dimension}`
                     }
-                };
-                
-                /**
-                 * 🌱 UI Manager
-                 * 
-                 * Handles UI updates and interactions
-                 */
-                const UIManager = {
-                    /**
-                     * Update the editor with node content
-                     */
-                    updateEditor: function(node) {
-                        Debug.log("Showing editor");
-                        DOM.editorTitle.textContent = `Editing ${node.name || node.id}`;
-                        DOM.editorSubtitle.textContent = 'Make changes and click "Update Node" to save';
-                        DOM.nodeName.value = node.name || '';
-                        DOM.nodeContent.value = node.content;
-                        
-                        DOM.editorPlaceholder.style.display = 'none';
-                        DOM.nodeName.style.display = 'block';
-                        DOM.nodeContent.style.display = 'block';
-                        document.querySelector('label.name-label').style.display = 'block';
-                        DOM.updateNodeBtn.style.display = 'block';
-                        
-                        document.querySelectorAll('.size-controls button').forEach(btn => {
-                            btn.style.display = 'inline-block';
-                        });
-                        
-                        document.querySelectorAll('.dimension-control').forEach(ctrl => {
-                            ctrl.style.display = 'flex';
-                        });
-                    },
-                    
-                    /**
-                     * Clear the editor
-                     */
-                    clearEditor: function() {
-                        Debug.log("Hiding editor");
-                        DOM.editorTitle.textContent = 'Node Editor';
-                        DOM.editorSubtitle.textContent = 'Select a node to edit its content';
-                        
-                        DOM.editorPlaceholder.style.display = 'flex';
-                        DOM.nodeName.style.display = 'none';
-                        DOM.nodeContent.style.display = 'none';
-                        document.querySelector('label.name-label').style.display = 'none';
-                        DOM.updateNodeBtn.style.display = 'none';
-                        
-                        document.querySelectorAll('.size-controls button').forEach(btn => {
-                            btn.style.display = 'none';
-                        });
-                        
-                        document.querySelectorAll('.dimension-control').forEach(ctrl => {
-                            ctrl.style.display = 'none';
-                        });
-                    },
-                    
-                    /**
-                     * Update status message
-                     */
-                    updateStatus: function(message) {
-                        DOM.statusEl.textContent = message;
-                        Debug.log(`Status: ${message}`);
-                        
-                        // Clear status after 3 seconds
-                        setTimeout(() => {
-                            if (DOM.statusEl.textContent === message) {
-                                DOM.statusEl.textContent = state.ui.selectedNode ? 
-                                    `Selected: ${state.ui.selectedNode.name || state.ui.selectedNode.id}` : 'Ready';
-                            }
-                        }, 3000);
-                    },
-                    
-                    /**
-                     * Resize the canvas
-                     */
-                    resizeCanvas: function() {
-                        Debug.log("Resizing canvas");
-                        DOM.canvas.width = DOM.canvas.offsetWidth;
-                        DOM.canvas.height = DOM.canvas.offsetHeight;
-                        Renderer.draw();
-                    }
-                };
-                
-                /**
-                 * 🌱 Input Handler
-                 * 
-                 * Manages mouse and keyboard interactions
-                 */
-                const InputHandler = {
-                    /**
-                     * Handle mouse down event
-                     */
-                    handleMouseDown: function(e) {
-                        const rect = DOM.canvas.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        
-                        // Check if we're clicking a node
-                        const node = NodeManager.findNodeAt(x, y);
-                        
-                        if (node) {
-                            // Track dragging start position
-                            Debug.log(`Starting drag on node ${node.id} at (${x}, ${y})`);
-                            
-                            // 🐜 Set the dragged node separately from the selected node
-                            // This allows dragging any node, not just the currently selected one
-                            state.ui.isDragging = true;
-                            state.ui.draggedNode = node;
-                            state.ui.dragOffsetX = x - node.x;
-                            state.ui.dragOffsetY = y - node.y;
-                            
-                            // Set cursor style
-                            DOM.canvas.style.cursor = 'grabbing';
-                        }
-                    },
-                    
-                    /**
-                     * Handle mouse move event
-                     */
-                    handleMouseMove: function(e) {
-                        const rect = DOM.canvas.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        
-                        // Handle node dragging
-                        if (state.ui.isDragging && state.ui.draggedNode) {
-                            // 🐜 Use the draggedNode (not the selectedNode) for movement
-                            // This fixes the bug where dragging a new node would move the selected node
-                            Debug.log(`Dragging node ${state.ui.draggedNode.id} to (${x - state.ui.dragOffsetX}, ${y - state.ui.dragOffsetY})`);
-                            
-                            // Update node position based on mouse movement
-                            state.ui.draggedNode.x = x - state.ui.dragOffsetX;
-                            state.ui.draggedNode.y = y - state.ui.dragOffsetY;
-                            
-                            // Redraw
-                            Renderer.draw();
-                        } else {
-                            // Hover effect - change cursor based on whether mouse is over a node
-                            const node = NodeManager.findNodeAt(x, y);
-                            DOM.canvas.style.cursor = node ? 'grab' : 'default';
-                        }
-                    },
-                    
-                    /**
-                     * Handle mouse up event
-                     */
-                    handleMouseUp: function() {
-                        if (state.ui.isDragging) {
-                            Debug.log("Ending drag operation");
-                        }
-                        
-                        // 🐜 Reset both isDragging and draggedNode
-                        state.ui.isDragging = false;
-                        state.ui.draggedNode = null;
-                        DOM.canvas.style.cursor = state.ui.selectedNode ? 'grab' : 'default';
-                    },
-                    
-                    /**
-                     * Handle mouse click event
-                     */
-                    handleClick: function(e) {
-                        // 🐜 Only handle node selection if we've released the mouse without dragging much
-                        // This way a short drag won't change the selection, but a click will
-                        if (state.ui.isDragging) {
-                            Debug.log("Ignoring click after drag");
-                            return;
-                        }
-                        
-                        const rect = DOM.canvas.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        
-                        const node = NodeManager.findNodeAt(x, y);
-                        
-                        if (node) {
-                            Debug.log(`Clicked on node ${node.id}`);
-                            NodeManager.selectNode(node);
-                        }
-                    },
-                    
-                    /**
-                     * Set up all event listeners
-                     */
-                    setupEventListeners: function() {
-                        Debug.log("Setting up event listeners");
-                        
-                        // Canvas mouse events
-                        DOM.canvas.addEventListener('mousedown', this.handleMouseDown);
-                        DOM.canvas.addEventListener('mousemove', this.handleMouseMove);
-                        DOM.canvas.addEventListener('mouseup', this.handleMouseUp);
-                        DOM.canvas.addEventListener('click', this.handleClick);
-                        
-                        // Button events
-                        DOM.addNodeBtn.addEventListener('click', NodeManager.addConnectedNode);
-                        DOM.exportJsonBtn.addEventListener('click', ExportManager.exportToJSON);
-                        DOM.exportCsvBtn.addEventListener('click', ExportManager.exportToCSV);
-                        DOM.updateNodeBtn.addEventListener('click', NodeManager.updateNodeContent);
-                        
-                        // Size control buttons
-                        DOM.heightDecreaseBtn.addEventListener('click', () => NodeManager.resizeNode('height', -CONFIG.node.resizeStep));
-                        DOM.heightIncreaseBtn.addEventListener('click', () => NodeManager.resizeNode('height', CONFIG.node.resizeStep));
-                        DOM.widthDecreaseBtn.addEventListener('click', () => NodeManager.resizeNode('width', -CONFIG.node.resizeStep));
-                        DOM.widthIncreaseBtn.addEventListener('click', () => NodeManager.resizeNode('width', CONFIG.node.resizeStep));
-                        DOM.toggleStyleBtn.addEventListener('click', NodeManager.toggleNodeStyle);
-                        
-                        // Keyboard shortcuts for editor
-                        DOM.nodeContent.addEventListener('keydown', function(e) {
-                            // Ctrl+Enter to save
-                            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                                e.preventDefault();
-                                NodeManager.updateNodeContent();
-                            }
-                        });
-                        
-                        // Window resize
-                        window.addEventListener('resize', UIManager.resizeCanvas);
-                    }
-                };
-                
-                /**
-                 * 🌱 Export Manager
-                 * 
-                 * Handles data export in different formats
-                 */
-                const ExportManager = {
-                    /**
-                     * Export graph to JSON
-                     */
-                    exportToJSON: function() {
-                        Debug.log("Exporting to JSON");
-                        const dataStr = JSON.stringify(state.graph, null, 2);
-                        ExportManager.downloadFile(dataStr, 'nodepad.json', 'application/json');
-                        UIManager.updateStatus('Exported JSON file');
-                    },
-                    
-                    /**
-                     * Export graph to CSV files
-                     */
-                    exportToCSV: function() {
-                        Debug.log("Exporting to CSV");
-                        
-                        // Export nodes CSV
-                        const nodeHeader = 'id,name,content,x,y,width,height,style\n';
-                        const nodeRows = state.graph.nodes.map(node => {
-                            // Escape content for CSV format (replace " with "" and wrap in quotes)
-                            const escapedContent = `"${node.content.replace(/"/g, '""')}"`;
-                            const escapedName = `"${(node.name || '').replace(/"/g, '""')}"`;
-                            return `${node.id},${escapedName},${escapedContent},${node.x},${node.y},${node.width},${node.height},${node.style}`;
-                        }).join('\n');
-                        
-                        const nodesCSV = nodeHeader + nodeRows;
-                        
-                        // Export edges CSV
-                        const edgeHeader = 'id,sourceId,targetId\n';
-                        const edgeRows = state.graph.edges.map(edge => {
-                            return `${edge.id},${edge.sourceId},${edge.targetId}`;
-                        }).join('\n');
-                        
-                        const edgesCSV = edgeHeader + edgeRows;
-                        
-                        // Download both files
-                        ExportManager.downloadFile(nodesCSV, 'nodepad-nodes.csv', 'text/csv');
-                        ExportManager.downloadFile(edgesCSV, 'nodepad-edges.csv', 'text/csv');
-                        
-                        UIManager.updateStatus('Exported CSV files');
-                    },
-                    
-                    /**
-                     * Download a file
-                     */
-                    downloadFile: function(content, fileName, contentType) {
-                        Debug.log(`Downloading file: ${fileName}`);
-                        const blob = new Blob([content], { type: contentType });
-                        const url = URL.createObjectURL(blob);
-                        
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileName;
-                        a.click();
-                        
-                        URL.revokeObjectURL(url);
-                    }
-                };
-                
-                /**
-                 * Initialize the application
-                 */
-                function init() {
-                    Debug.log("Application starting");
-                    
-                    // Set up canvas
-                    UIManager.resizeCanvas();
-                    
-                    // Create initial node
-                    NodeManager.createInitialNode();
-                    
-                    // Set up event listeners
-                    InputHandler.setupEventListeners();
-                    
-                    // Hide editor initially
-                    UIManager.clearEditor();
-                    
-                    Debug.log("Application initialized");
                 }
-                
-                // Return public API
-                return {
-                    init: init,
-                    config: CONFIG,
-                    debug: Debug
-                };
-            })();
+            };
             
-            // Initialize application
-            NodePad.init();
+            // =====================================================================
+            // 🌱 TEMPLATES: Reusable Object Factories
+            // =====================================================================
+
+            /**
+             * @template System for creating consistent objects
+             * Provides factories for creating nodes, edges, and other application objects
+             */
+            const Templates = {
+                /**
+                 * Creates a new node with specified properties
+                 * @param {Object} props - Properties to override defaults
+                 * @returns {Object} A new node object
+                 */
+                createNode: function(props = {}) {
+                    const id = props.id || `node-${State.counters.nextNodeId++}`;
+                    
+                    return {
+                        id: id,
+                        name: props.name || '',
+                        content: props.content || META.node.defaults.content,
+                        x: props.x || 0,
+                        y: props.y || 0,
+                        width: props.width || META.node.defaults.width,
+                        height: props.height || META.node.defaults.height,
+                        style: props.style || META.node.defaults.style
+                    };
+                },
+                
+                /**
+                 * Creates a new edge between two nodes
+                 * @param {string} sourceId - ID of source node
+                 * @param {string} targetId - ID of target node
+                 * @returns {Object} A new edge object
+                 */
+                createEdge: function(sourceId, targetId) {
+                    return {
+                        id: `edge-${State.counters.nextEdgeId++}`,
+                        sourceId: sourceId,
+                        targetId: targetId
+                    };
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 STATE: Global Application State
+            // =====================================================================
+
+            /**
+             * @state Central state management
+             * Maintains the application state and provides methods for manipulation
+             */
+            const State = {
+                /** Graph data containing nodes and edges */
+                graph: {
+                    nodes: [],
+                    edges: []
+                },
+                
+                /** UI state information */
+                ui: {
+                    selectedNode: null,
+                    isDragging: false,
+                    draggedNode: null,
+                    dragOffsetX: 0,
+                    dragOffsetY: 0
+                },
+                
+                /** Global counters */
+                counters: {
+                    nextNodeId: 1,
+                    nextEdgeId: 1
+                },
+                
+                /**
+                 * Selects a node and updates UI accordingly
+                 * @param {Object|null} node - Node to select or null to deselect
+                 */
+                selectNode: function(node) {
+                    this.ui.selectedNode = node;
+                    UI.updateEditor(node);
+                    Renderer.draw();
+                    
+                    if (node) {
+                        UI.updateStatus(META.templates.status.selected(node.name || node.id));
+                    } else {
+                        UI.updateStatus(META.templates.status.ready);
+                    }
+                },
+                
+                /**
+                 * Adds a new node to the graph
+                 * @param {Object} nodeProps - Properties for the new node
+                 * @returns {Object} The created node
+                 */
+                addNode: function(nodeProps) {
+                    const node = Templates.createNode(nodeProps);
+                    this.graph.nodes.push(node);
+                    return node;
+                },
+                
+                /**
+                 * Connects two nodes with an edge
+                 * @param {string} sourceId - ID of source node
+                 * @param {string} targetId - ID of target node
+                 * @returns {Object} The created edge
+                 */
+                addEdge: function(sourceId, targetId) {
+                    const edge = Templates.createEdge(sourceId, targetId);
+                    this.graph.edges.push(edge);
+                    return edge;
+                },
+                
+                /**
+                 * Finds a node at the specified coordinates
+                 * @param {number} x - X coordinate
+                 * @param {number} y - Y coordinate
+                 * @returns {Object|null} Node at coordinates or null if none found
+                 */
+                findNodeAt: function(x, y) {
+                    // Search from front to back (later nodes appear on top)
+                    for (let i = this.graph.nodes.length - 1; i >= 0; i--) {
+                        const node = this.graph.nodes[i];
+                        if (x >= node.x && x <= node.x + node.width &&
+                            y >= node.y && y <= node.y + node.height) {
+                            return node;
+                        }
+                    }
+                    return null;
+                },
+                
+                /**
+                 * Updates node content and name
+                 * @param {string} nodeId - ID of node to update
+                 * @param {Object} changes - Properties to update
+                 */
+                updateNode: function(nodeId, changes) {
+                    const node = this.graph.nodes.find(n => n.id === nodeId);
+                    if (!node) return;
+                    
+                    // Apply changes
+                    Object.assign(node, changes);
+                    Renderer.draw();
+                    UI.updateStatus(META.templates.status.updated(node.name || node.id));
+                },
+                
+                /**
+                 * Exports graph data to specified format
+                 * @param {string} format - Format to export ('json', 'csv')
+                 */
+                exportData: function(format) {
+                    if (format === 'json') {
+                        ExportManager.toJson();
+                    } else if (format === 'csv') {
+                        ExportManager.toCsv();
+                    }
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 DOM: Interface to DOM Elements
+            // =====================================================================
+
+            /**
+             * @dom Access to DOM elements
+             * Provides centralized access to all DOM elements used by the application
+             */
+            const DOM = {
+                /** Element references */
+                elements: {},
+                
+                /** Canvas element and context */
+                canvas: null,
+                ctx: null,
+                
+                /**
+                 * Initializes DOM references
+                 * Gathers all necessary DOM elements into a single access point
+                 */
+                init: function() {
+                    // Core elements
+                    const ids = [
+                        'network-canvas', 'add-node-btn', 'export-json-btn', 'export-csv-btn',
+                        'node-name', 'node-content', 'update-node-btn', 'editor-title',
+                        'editor-subtitle', 'editor-placeholder', 'status', 'canvasContainer',
+                        'height-decrease', 'height-increase', 'width-decrease', 'width-increase',
+                        'toggle-style'
+                    ];
+                    
+                    // Populate elements object
+                    ids.forEach(id => {
+                        this.elements[id] = document.getElementById(id);
+                    });
+                    
+                    // Setup canvas and context
+                    this.canvas = this.elements['network-canvas'];
+                    this.ctx = this.canvas.getContext('2d');
+                    
+                    // Ensure canvas is properly sized
+                    this.resizeCanvas();
+                },
+                
+                /**
+                 * Sets the canvas size to match its container
+                 */
+                resizeCanvas: function() {
+                    const container = document.querySelector('.canvas-container');
+                    this.canvas.width = container.offsetWidth;
+                    this.canvas.height = container.offsetHeight;
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 UI: User Interface Management
+            // =====================================================================
+
+            /**
+             * @ui Interface management
+             * Handles updating the UI based on application state
+             */
+            const UI = {
+                /**
+                 * Updates the node editor with node content
+                 * @param {Object|null} node - Node to edit or null to clear editor
+                 */
+                updateEditor: function(node) {
+                    const placeholderEl = DOM.elements['editor-placeholder'];
+                    const nameEl = DOM.elements['node-name'];
+                    const contentEl = DOM.elements['node-content'];
+                    const titleEl = DOM.elements['editor-title'];
+                    const subtitleEl = DOM.elements['editor-subtitle'];
+                    const updateBtnEl = DOM.elements['update-node-btn'];
+                    const controls = document.querySelectorAll('.dimension-control');
+                    
+                    if (node) {
+                        // Show editor with node content
+                        placeholderEl.style.display = 'none';
+                        nameEl.style.display = 'block';
+                        contentEl.style.display = 'block';
+                        updateBtnEl.style.display = 'block';
+                        
+                        // Set content
+                        nameEl.value = node.name || '';
+                        contentEl.value = node.content || '';
+                        
+                        // Update headings
+                        titleEl.textContent = `Editing ${node.name || node.id}`;
+                        subtitleEl.textContent = 'Make changes and click "Update Node" to save';
+                        
+                        // Show controls
+                        controls.forEach(c => c.style.display = 'flex');
+                    } else {
+                        // Hide editor, show placeholder
+                        placeholderEl.style.display = 'flex';
+                        nameEl.style.display = 'none';
+                        contentEl.style.display = 'none';
+                        updateBtnEl.style.display = 'none';
+                        
+                        // Update headings
+                        titleEl.textContent = 'Node Editor';
+                        subtitleEl.textContent = 'Select a node to edit its content';
+                        
+                        // Hide controls
+                        controls.forEach(c => c.style.display = 'none');
+                    }
+                },
+                
+                /**
+                 * Updates the status message
+                 * @param {string} message - Status message to display
+                 * @param {number} [duration=3000] - Duration to show message in ms
+                 */
+                updateStatus: function(message, duration = 3000) {
+                    const statusEl = DOM.elements.status;
+                    if (!statusEl) return;
+                    
+                    // Set message
+                    statusEl.textContent = message;
+                    Debug.log(`Status: ${message}`);
+                    
+                    // Clear after duration
+                    setTimeout(() => {
+                        if (statusEl.textContent === message) {
+                            statusEl.textContent = State.ui.selectedNode ? 
+                                META.templates.status.selected(State.ui.selectedNode.name || State.ui.selectedNode.id) : 
+                                META.templates.status.ready;
+                        }
+                    }, duration);
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 RENDERER: Canvas Drawing System
+            // =====================================================================
+
+            /**
+             * @renderer Drawing system
+             * Handles all rendering operations on the canvas
+             */
+            const Renderer = {
+                /**
+                 * Draws the complete graph
+                 * Renders all nodes and edges on the canvas
+                 */
+                draw: function() {
+                    const ctx = DOM.ctx;
+                    const canvas = DOM.canvas;
+                    
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw all edges
+                    this.drawEdges();
+                    
+                    // Draw all nodes
+                    this.drawNodes();
+                },
+                
+                /**
+                 * Draws all edges in the graph
+                 */
+                drawEdges: function() {
+                    const ctx = DOM.ctx;
+                    const edges = State.graph.edges;
+                    
+                    // Set default edge style
+                    ctx.strokeStyle = META.edge.style.color;
+                    ctx.lineWidth = META.edge.style.width;
+                    
+                    edges.forEach(edge => {
+                        // Find connected nodes
+                        const sourceNode = State.graph.nodes.find(n => n.id === edge.sourceId);
+                        const targetNode = State.graph.nodes.find(n => n.id === edge.targetId);
+                        
+                        // Skip if either node is missing
+                        if (!sourceNode || !targetNode) return;
+                        
+                        // Calculate connection points (center of nodes)
+                        const sourceX = sourceNode.x + sourceNode.width / 2;
+                        const sourceY = sourceNode.y + sourceNode.height / 2;
+                        const targetX = targetNode.x + targetNode.width / 2;
+                        const targetY = targetNode.y + targetNode.height / 2;
+                        
+                        // Draw connecting line
+                        ctx.beginPath();
+                        ctx.moveTo(sourceX, sourceY);
+                        ctx.lineTo(targetX, targetY);
+                        ctx.stroke();
+                    });
+                },
+                
+                /**
+                 * Draws all nodes in the graph
+                 */
+                drawNodes: function() {
+                    const nodes = State.graph.nodes;
+                    
+                    nodes.forEach(node => {
+                        this.drawNode(node);
+                    });
+                },
+                
+                /**
+                 * Draws a single node
+                 * @param {Object} node - Node to draw
+                 */
+                drawNode: function(node) {
+                    const ctx = DOM.ctx;
+                    const isSelected = node === State.ui.selectedNode;
+                    const styleTemplate = META.nodeStyles[node.style] || META.nodeStyles.standard;
+                    const colors = styleTemplate.colors;
+                    const headerHeight = META.node.rendering.headerHeight;
+                    const textPadding = META.node.rendering.textPadding;
+                    const lineHeight = META.node.rendering.lineHeight;
+                    const borderRadius = META.node.rendering.borderRadius;
+                    
+                    // Set up shadow for depth
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    
+                    // Fill and stroke settings based on selection state
+                    ctx.fillStyle = isSelected ? colors.selectedBackground : colors.background;
+                    ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
+                    ctx.lineWidth = isSelected ? 2 : 1;
+                    
+                    // Draw main rectangle with rounded corners
+                    ctx.beginPath();
+                    this.roundRect(ctx, node.x, node.y, node.width, node.height, borderRadius);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Reset shadow for other elements
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+                    // Draw header background
+                    ctx.fillStyle = isSelected ? colors.selectedHeader : colors.header;
+                    ctx.beginPath();
+                    this.roundRect(ctx, node.x, node.y, node.width, headerHeight, 
+                                   [borderRadius, borderRadius, 0, 0]);
+                    ctx.fill();
+                    
+                    // Draw header separator line
+                    ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
+                    ctx.beginPath();
+                    ctx.moveTo(node.x, node.y + headerHeight);
+                    ctx.lineTo(node.x + node.width, node.y + headerHeight);
+                    ctx.stroke();
+                    
+                    // Draw node name or ID in header
+                    ctx.fillStyle = colors.text;
+                    ctx.font = `bold 14px var(--font-family)`;
+                    const displayName = node.name || node.id;
+                    ctx.fillText(displayName, node.x + textPadding, node.y + headerHeight - 10);
+                    
+                    // Draw content with word wrapping
+                    ctx.font = `14px var(--font-family)`;
+                    
+                    // Get wrapped text lines
+                    const maxWidth = node.width - (textPadding * 2);
+                    const wrappedText = this.wrapText(ctx, node.content, maxWidth);
+                    
+                    // Draw each line of text
+                    wrappedText.forEach((line, index) => {
+                        const y = node.y + headerHeight + textPadding + (index * lineHeight);
+                        // Only draw if within node bounds
+                        if (y < node.y + node.height - textPadding) {
+                            ctx.fillText(line, node.x + textPadding, y);
+                        }
+                    });
+                    
+                    // Indicate if content is truncated
+                    const contentHeight = wrappedText.length * lineHeight;
+                    const maxVisibleHeight = node.height - headerHeight - (textPadding * 2);
+                    
+                    if (contentHeight > maxVisibleHeight) {
+                        ctx.fillStyle = '#999999';
+                        ctx.fillText('...', node.x + textPadding, node.y + node.height - textPadding);
+                    }
+                    
+                    // Draw edit indicator if selected
+                    if (isSelected) {
+                        ctx.fillStyle = colors.selectedBorder;
+                        ctx.font = '12px var(--font-family)';
+                        ctx.fillText('✎ Edit', node.x + node.width - 40, node.y + node.height - 10);
+                    }
+                },
+                
+                /**
+                 * Draws a rounded rectangle
+                 * @param {CanvasRenderingContext2D} ctx - Canvas context
+                 * @param {number} x - X coordinate
+                 * @param {number} y - Y coordinate
+                 * @param {number} width - Rectangle width
+                 * @param {number} height - Rectangle height
+                 * @param {number|Array} radius - Corner radius or array of corner radii
+                 */
+                roundRect: function(ctx, x, y, width, height, radius) {
+                    // Handle different radius specifications
+                    if (typeof radius === 'number') {
+                        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+                    } else if (Array.isArray(radius)) {
+                        const [tl, tr, br, bl] = [...radius, ...Array(4-radius.length).fill(0)];
+                        radius = {tl, tr, br, bl};
+                    } else {
+                        radius = {tl: 0, tr: 0, br: 0, bl: 0};
+                    }
+                    
+                    // Draw rounded rectangle path
+                    ctx.beginPath();
+                    ctx.moveTo(x + radius.tl, y);
+                    ctx.lineTo(x + width - radius.tr, y);
+                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+                    ctx.lineTo(x + width, y + height - radius.br);
+                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+                    ctx.lineTo(x + radius.bl, y + height);
+                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+                    ctx.lineTo(x, y + radius.tl);
+                    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+                    ctx.closePath();
+                },
+                
+                /**
+                 * Wraps text to fit within a specified width
+                 * @param {CanvasRenderingContext2D} ctx - Canvas context
+                 * @param {string} text - Text to wrap
+                 * @param {number} maxWidth - Maximum width for the text
+                 * @returns {Array} Array of text lines
+                 */
+                wrapText: function(ctx, text, maxWidth) {
+                    if (!text) return [];
+                    
+                    const lines = [];
+                    
+                    // Handle multi-paragraph text
+                    const paragraphs = text.split('\n');
+                    
+                    paragraphs.forEach(paragraph => {
+                        // Add empty line for empty paragraphs
+                        if (paragraph === '') {
+                            lines.push('');
+                            return;
+                        }
+                        
+                        // Split paragraph into words
+                        const words = paragraph.split(' ');
+                        let currentLine = '';
+                        
+                        // Process each word
+                        words.forEach(word => {
+                            // Try adding the word to the current line
+                            const testLine = currentLine ? currentLine + ' ' + word : word;
+                            const metrics = ctx.measureText(testLine);
+                            
+                            // If the line becomes too long, start a new one
+                            if (metrics.width > maxWidth && currentLine !== '') {
+                                lines.push(currentLine);
+                                currentLine = word;
+                            } else {
+                                currentLine = testLine;
+                            }
+                        });
+                        
+                        // Add the last line
+                        if (currentLine) {
+                            lines.push(currentLine);
+                        }
+                    });
+                    
+                    return lines;
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 INPUT: User Interaction Handler
+            // =====================================================================
+
+            /**
+             * @input Interaction management
+             * Handles mouse and keyboard interactions
+             */
+            const InputHandler = {
+                /**
+                 * Sets up all event listeners
+                 */
+                init: function() {
+                    // Canvas mouse events
+                    DOM.canvas.addEventListener('mousedown', this.handleMouseDown);
+                    DOM.canvas.addEventListener('mousemove', this.handleMouseMove);
+                    DOM.canvas.addEventListener('mouseup', this.handleMouseUp);
+                    DOM.canvas.addEventListener('click', this.handleClick);
+                    
+                    // Button events
+                    DOM.elements['add-node-btn'].addEventListener('click', this.handleAddNode);
+                    DOM.elements['export-json-btn'].addEventListener('click', () => State.exportData('json'));
+                    DOM.elements['export-csv-btn'].addEventListener('click', () => State.exportData('csv'));
+                    DOM.elements['update-node-btn'].addEventListener('click', this.handleUpdateNode);
+                    
+                    // Node resize controls
+                    DOM.elements['height-decrease'].addEventListener('click', () => this.handleResizeNode('height', -META.node.constraints.resizeStep));
+                    DOM.elements['height-increase'].addEventListener('click', () => this.handleResizeNode('height', META.node.constraints.resizeStep));
+                    DOM.elements['width-decrease'].addEventListener('click', () => this.handleResizeNode('width', -META.node.constraints.resizeStep));
+                    DOM.elements['width-increase'].addEventListener('click', () => this.handleResizeNode('width', META.node.constraints.resizeStep));
+                    DOM.elements['toggle-style'].addEventListener('click', this.handleToggleStyle);
+                    
+                    // Window resize event
+                    window.addEventListener('resize', () => {
+                        DOM.resizeCanvas();
+                        Renderer.draw();
+                    });
+                },
+                
+                /**
+                 * Handles mouse down event
+                 * @param {MouseEvent} e - Mouse event
+                 */
+                handleMouseDown: function(e) {
+                    // Get mouse position relative to canvas
+                    const rect = DOM.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Find node under cursor
+                    const node = State.findNodeAt(x, y);
+                    
+                    if (node) {
+                        // Start dragging
+                        State.ui.isDragging = true;
+                        State.ui.draggedNode = node;
+                        State.ui.dragOffsetX = x - node.x;
+                        State.ui.dragOffsetY = y - node.y;
+                        
+                        // Change cursor
+                        DOM.canvas.style.cursor = 'grabbing';
+                    }
+                },
+                
+                /**
+                 * Handles mouse move event
+                 * @param {MouseEvent} e - Mouse event
+                 */
+                handleMouseMove: function(e) {
+                    const rect = DOM.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Handle dragging
+                    if (State.ui.isDragging && State.ui.draggedNode) {
+                        // Update node position
+                        State.ui.draggedNode.x = x - State.ui.dragOffsetX;
+                        State.ui.draggedNode.y = y - State.ui.dragOffsetY;
+                        Renderer.draw();
+                    } else {
+                        // Update cursor style based on hover
+                        const node = State.findNodeAt(x, y);
+                        DOM.canvas.style.cursor = node ? 'grab' : 'default';
+                    }
+                },
+                
+                /**
+                 * Handles mouse up event
+                 */
+                handleMouseUp: function() {
+                    // End dragging
+                    State.ui.isDragging = false;
+                    State.ui.draggedNode = null;
+                    
+                    // Reset cursor
+                    DOM.canvas.style.cursor = 'default';
+                },
+                
+                /**
+                 * Handles mouse click event
+                 * @param {MouseEvent} e - Mouse event
+                 */
+                handleClick: function(e) {
+                    // Ignore if we just finished dragging
+                    if (State.ui.isDragging) return;
+                    
+                    // Get mouse position
+                    const rect = DOM.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // Find and select node
+                    const node = State.findNodeAt(x, y);
+                    State.selectNode(node);
+                },
+                
+                /**
+                 * Handles adding a new node
+                 */
+                handleAddNode: function() {
+                    // Calculate position for new node
+                    const canvas = DOM.canvas;
+                    const centerX = canvas.width / 2 - META.node.defaults.width / 2;
+                    const centerY = canvas.height / 2 - META.node.defaults.height / 2;
+                    
+                    // Add offset if there's a selected node
+                    let x = centerX;
+                    let y = centerY;
+                    
+                    if (State.ui.selectedNode) {
+                        x = State.ui.selectedNode.x + State.ui.selectedNode.width + 50;
+                        y = State.ui.selectedNode.y;
+                        
+                        // Create edge from selected to new node
+                        const newNode = State.addNode({ x, y });
+                        State.addEdge(State.ui.selectedNode.id, newNode.id);
+                        State.selectNode(newNode);
+                    } else {
+                        // Create node at center if no selection
+                        const newNode = State.addNode({ 
+                            x, y, 
+                            name: META.templates.welcome.nodeName,
+                            content: META.templates.welcome.nodeContent
+                        });
+                        State.selectNode(newNode);
+                    }
+                    
+                    Renderer.draw();
+                    UI.updateStatus(META.templates.status.created(State.ui.selectedNode.id));
+                },
+                
+                /**
+                 * Handles updating a node
+                 */
+                handleUpdateNode: function() {
+                    if (!State.ui.selectedNode) return;
+                    
+                    // Get values from editor
+                    const nameEl = DOM.elements['node-name'];
+                    const contentEl = DOM.elements['node-content'];
+                    
+                    // Update node
+                    State.updateNode(State.ui.selectedNode.id, {
+                        name: nameEl.value,
+                        content: contentEl.value
+                    });
+                },
+                
+                /**
+                 * Handles resizing a node
+                 * @param {string} dimension - Dimension to resize ('width' or 'height')
+                 * @param {number} delta - Amount to change dimension
+                 */
+                handleResizeNode: function(dimension, delta) {
+                    if (!State.ui.selectedNode) return;
+                    
+                    const node = State.ui.selectedNode;
+                    const constraints = META.node.constraints;
+                    
+                    // Apply resize with constraints
+                    if (dimension === 'width') {
+                        const newWidth = node.width + delta;
+                        node.width = Math.max(constraints.minWidth, Math.min(constraints.maxWidth, newWidth));
+                    } else if (dimension === 'height') {
+                        const newHeight = node.height + delta;
+                        node.height = Math.max(constraints.minHeight, Math.min(constraints.maxHeight, newHeight));
+                    }
+                    
+                    Renderer.draw();
+                    UI.updateStatus(META.templates.status.resized(dimension));
+                },
+                
+                /**
+                 * Handles toggling node style
+                 */
+                handleToggleStyle: function() {
+                    if (!State.ui.selectedNode) return;
+                    
+                    const node = State.ui.selectedNode;
+                    const styles = Object.keys(META.nodeStyles);
+                    
+                    // Find current style index
+                    const currentIndex = styles.indexOf(node.style);
+                    
+                    // Get next style (or circle back to first)
+                    const nextIndex = (currentIndex + 1) % styles.length;
+                    node.style = styles[nextIndex];
+                    
+                    Renderer.draw();
+                    UI.updateStatus(`Style changed to ${META.nodeStyles[node.style].name}`);
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 EXPORT: Data Export Functionality
+            // =====================================================================
+
+            /**
+             * @export Export functionality
+             * Handles exporting graph data to different formats
+             */
+            const ExportManager = {
+                /**
+                 * Exports graph to JSON
+                 */
+                toJson: function() {
+                    // Create a copy of the graph data
+                    const graphData = JSON.stringify(State.graph, null, 2);
+                    
+                    // Download as file
+                    this.downloadFile(graphData, 'nodepad.json', META.export.formats.json.contentType);
+                    UI.updateStatus(META.templates.status.exported('JSON'));
+                },
+                
+                /**
+                 * Exports graph to CSV files
+                 */
+                toCsv: function() {
+                    // Create nodes CSV
+                    const nodeHeader = 'id,name,content,x,y,width,height,style\n';
+                    const nodeRows = State.graph.nodes.map(node => {
+                        // Escape content for CSV
+                        const escapedContent = `"${node.content.replace(/"/g, '""')}"`;
+                        const escapedName = `"${(node.name || '').replace(/"/g, '""')}"`;
+                        
+                        return `${node.id},${escapedName},${escapedContent},${node.x},${node.y},${node.width},${node.height},${node.style}`;
+                    }).join('\n');
+                    
+                    const nodesCSV = nodeHeader + nodeRows;
+                    
+                    // Create edges CSV
+                    const edgeHeader = 'id,sourceId,targetId\n';
+                    const edgeRows = State.graph.edges.map(edge => {
+                        return `${edge.id},${edge.sourceId},${edge.targetId}`;
+                    }).join('\n');
+                    
+                    const edgesCSV = edgeHeader + edgeRows;
+                    
+                    // Download both files
+                    this.downloadFile(nodesCSV, META.export.formats.nodeCsv.filename, META.export.formats.nodeCsv.contentType);
+                    this.downloadFile(edgesCSV, META.export.formats.edgeCsv.filename, META.export.formats.edgeCsv.contentType);
+                    
+                    UI.updateStatus(META.templates.status.exported('CSV'));
+                },
+                
+                /**
+                 * Creates and triggers download for a file
+                 * @param {string} content - File content
+                 * @param {string} fileName - File name
+                 * @param {string} contentType - File MIME type
+                 */
+                downloadFile: function(content, fileName, contentType) {
+                    // Create blob and download link
+                    const blob = new Blob([content], { type: contentType });
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Create and trigger download link
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    
+                    // Cleanup
+                    URL.revokeObjectURL(url);
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 DEBUG: Debugging Utilities
+            // =====================================================================
+
+            /**
+             * @debug Debugging utilities
+             * Provides consistent debugging output
+             */
+            const Debug = {
+                /**
+                 * Logs a debug message
+                 * @param {string} message - Message to log
+                 * @param {string} [level='info'] - Log level
+                 */
+                log: function(message, level = 'info') {
+                    if (!META.debug.enabled) return;
+                    
+                    const prefix = META.debug.prefix;
+                    const emoji = META.debug.levels[level] || META.debug.levels.info;
+                    console.log(`${emoji} ${prefix} v${META.version.number}: ${message}`);
+                },
+                
+                /**
+                 * Logs an error message
+                 * @param {string} message - Error message
+                 * @param {Error} [error] - Error object
+                 */
+                error: function(message, error) {
+                    if (!META.debug.enabled) return;
+                    
+                    const prefix = META.debug.prefix;
+                    const emoji = META.debug.levels.error;
+                    console.error(`${emoji} ${prefix} v${META.version.number}: ${message}`, error || '');
+                },
+                
+                /**
+                 * Logs a success message
+                 * @param {string} message - Success message
+                 */
+                success: function(message) {
+                    this.log(message, 'success');
+                }
+            };
+            
+            // =====================================================================
+            // 🌱 APP: Application Initialization
+            // =====================================================================
+
+            /**
+             * @app Main application
+             * Handles initialization and startup
+             */
+            const App = {
+                /**
+                 * Initializes the application
+                 */
+                init: function() {
+                    // Initialize DOM references
+                    DOM.init();
+                    
+                    // Set up event handlers
+                    InputHandler.init();
+                    
+                    // Create initial node if no nodes exist
+                    if (State.graph.nodes.length === 0) {
+                        InputHandler.handleAddNode();
+                    }
+                    
+                    // Render initial state
+                    Renderer.draw();
+                    
+                    Debug.success('Application initialized');
+                    UI.updateStatus('Welcome to NodePad!');
+                    
+                    return this;
+                }
+            };
+            
+            // =====================================================================
+            // Initialize the application when DOM is loaded
+            // =====================================================================
+            
+            // Start the application
+            App.init();
         });
     </script>
 </body>
