@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NodePad v1.0.0</title>
+    <title>NodePad v1.🌱1.0</title>
     <!-- 
-        🌱 NodePad: Nonlinear Knowledge Network
+        🔬 MICROSCOPE: SOURCE EXPLORER SYSTEM
         
         Version History:
-        v1.0.0 - Initial implementation with constructivist architecture and knot-compacted code
+        v0.0.1 - Initial implementation with popup editor and basic node display
+        v0.0.2 - Attempted to refactor with Node class architecture (contained bugs)
+        v0.0.3 - Fixed edge rendering bug and simplified architecture
+        v0.0.4 - Restructured code with proper DocTrellis versioning and modularized components
+        v0.0.5 - Fixed node interaction bug with dragging different nodes
+        v0.0.6 - Implemented template-based node rendering system
+        v0.0.7 - Added ability to edit node names
+        v0.1.0 - First minor version with stable core features and cleaned documentation
+        v1.0.0 - Complete constructivist rewrite with knot-compacted architecture
+        v1.🌱1.0 - Tentative source explorer feature using browser tabs (experimental)
         
         DocTrellis Feature Status:
         🌱 Core Architecture - Seedling - Constructivist template system with metadata-driven design
@@ -16,9 +25,23 @@
         🌱 Edge Connections - Seedling - Connections between nodes
         🌱 Network View - Seedling - Canvas-based visualization
         🌱 Export/Import - Seedling - JSON and CSV export functionality
+        🌱 Source Explorer - Seedling - Browser-based source code exploration
     -->
     <style>
-        /* 🌱 META System: Constructivist CSS Architecture */
+        /* 🧠 META System: Constructivist CSS Architecture
+           
+           This styling system is built as a self-teaching knowledge structure.
+           Variables aren't just for consistency - they're organized to reveal
+           relationships between values.
+           
+           For example, spacing follows mathematical relationships:
+           - We define a base unit (--space-unit: 8px)
+           - Other spaces are multiples/fractions of this unit
+           - Comments show the calculated values to aid understanding
+           
+           This helps developers build a mental model of the design system
+           simply by reading the code.
+        */
         
         /* Base Variables - Single Source of Truth */
         :root {
@@ -177,7 +200,7 @@
             background-color: var(--color-primary-dark);
         }
         
-        /* 🌱 Editor Styles */
+        /* 🧠 Editor Styles */
         .editor-header {
             padding: var(--space-md);
             border-bottom: 1px solid var(--color-border);
@@ -291,7 +314,43 @@
             font-size: var(--font-size-lg);
         }
         
-        /* 🌱 Status Indicator */
+        /* 🔬 Source Explorer Style */
+        .emoji-explorer {
+            cursor: pointer;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--transition-fast);
+        }
+        
+        .emoji-explorer:hover {
+            transform: scale(1.2);
+        }
+        
+        .emoji-explorer::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: var(--space-xs) var(--space-sm);
+            background-color: var(--color-text);
+            color: white;
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-sm);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            z-index: 10;
+        }
+        
+        .emoji-explorer:hover::after {
+            opacity: 1;
+        }
+        
+        /* 🛠️ Status Indicator */
         .status {
             position: absolute;
             bottom: var(--space-sm);
@@ -306,11 +365,23 @@
 </head>
 <body>
     <div class="header">
-        <h1 class="title">📝 NodePad <span class="version">v1.0.0</span></h1>
+        <h1 class="title">
+            <span class="emoji-explorer" data-tooltip="NodePad: Nonlinear Knowledge Network">📝</span> 
+            NodePad <span class="version">v1.🌱1.0</span>
+        </h1>
         <div class="controls">
-            <button id="add-node-btn">Add Node</button>
-            <button id="export-json-btn">Export JSON</button>
-            <button id="export-csv-btn">Export CSVs</button>
+            <button id="add-node-btn">
+                <span class="emoji-explorer" data-tooltip="Create a new connected node">🌱</span> Add Node
+            </button>
+            <button id="export-json-btn">
+                <span class="emoji-explorer" data-tooltip="Save as JSON file">📤</span> Export JSON
+            </button>
+            <button id="export-csv-btn">
+                <span class="emoji-explorer" data-tooltip="Save as CSV files">📤</span> Export CSVs
+            </button>
+            <button id="help-btn">
+                <span class="emoji-explorer" data-tooltip="Learn about Source Explorer">🔬</span> Source Explorer
+            </button>
         </div>
     </div>
     
@@ -341,17 +412,17 @@
                 <div class="editor-actions">
                     <div class="size-controls">
                         <div class="dimension-control">
-                            <span class="dimension-label">↕️</span>
+                            <span class="emoji-explorer dimension-label" data-tooltip="Adjust node height">↕️</span>
                             <button class="size-btn" id="height-decrease">-</button>
                             <button class="size-btn" id="height-increase">+</button>
                         </div>
                         <div class="dimension-control">
-                            <span class="dimension-label">↔️</span>
+                            <span class="emoji-explorer dimension-label" data-tooltip="Adjust node width">↔️</span>
                             <button class="size-btn" id="width-decrease">-</button>
                             <button class="size-btn" id="width-increase">+</button>
                         </div>
                         <div class="dimension-control">
-                            <span class="dimension-label">🎨</span>
+                            <span class="emoji-explorer dimension-label" data-tooltip="Change node style">🎨</span>
                             <button class="size-btn" id="toggle-style">↺</button>
                         </div>
                     </div>
@@ -363,47 +434,47 @@
 
     <script>
         /**
-         * 🌱 NodePad: Nonlinear Knowledge Network
+         * 🔬 NodePad v1.🌱1.0: A Constructivist Knowledge Network
          * 
-         * A constructivist approach to knowledge mapping that enables
-         * interconnected thoughts through a visual network interface.
+         * This application embodies constructivist programming principles:
+         * - Code as a learning artifact (self-documenting and explorable)
+         * - Learning through construction (interactive exploration of implementation)
+         * - Explicit over implicit patterns (metadata-driven architecture)
          * 
-         * This implementation follows constructivist principles:
-         * - Code as a learning artifact
-         * - Learning through construction
-         * - Explicit over implicit patterns
-         * - Self-documenting architecture
+         * The Source Explorer feature transforms every emoji into a knowledge portal
+         * that opens a new browser tab with the relevant source code section.
          * 
-         * We use the META framework:
-         * - Metadata: Explicit knowledge representation
-         * - Extraction: Atomic understanding units
-         * - Templates: Consistent patterns
-         * - Assembly: Clear learning pathways
-         * 
-         * Version: 1.0.0
+         * @author Constructivist Programming Team
+         * @version 1.🌱1.0
          */
         
         document.addEventListener('DOMContentLoaded', function() {
             // =====================================================================
-            // 🌱 META-SYSTEM: Application Metadata and Configuration
+            // 🧠 META-SYSTEM: Application Metadata and Configuration
             // =====================================================================
 
             /**
-             * @metadata Defines application-wide constants and configuration
-             * A single source of truth for all configurable parameters
+             * 🧠 META: Application knowledge system
+             * 
+             * This object serves as a single source of truth for all application
+             * configuration, providing a centralized knowledge structure that reveals
+             * the relationships between all configurable parameters.
+             * 
+             * By unifying configuration in one self-documenting structure, we make
+             * the system easier to understand, maintain, and extend.
              */
             const META = {
                 /** Application version information */
                 version: {
-                    number: '1.0.0',
-                    name: 'Constructivist Foundation',
+                    number: '1.🌱1.0',
+                    name: 'Source Explorer Edition',
                     date: '2025-03-31'
                 },
                 
                 /** Debug configuration */
                 debug: {
                     enabled: true,
-                    prefix: '🔍 NodePad',
+                    prefix: '🐛 NodePad',
                     levels: {
                         info: '📘',
                         warn: '⚠️',
@@ -495,11 +566,18 @@
                     }
                 },
                 
+                /** Source Explorer configuration */
+                sourceExplorer: {
+                    enabled: true,
+                    selector: '.emoji-explorer',
+                    helpMessage: 'Click any emoji to explore its source code in a new tab'
+                },
+                
                 /** Templates for static text */
                 templates: {
                     welcome: {
                         nodeName: 'Welcome Note',
-                        nodeContent: 'Welcome to NodePad!\n\nThis is a space for your interconnected thoughts and ideas.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Use the controls to customize nodes\n\nStart organizing your knowledge network!'
+                        nodeContent: 'Welcome to NodePad!\n\nThis is a space for your interconnected thoughts and ideas.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Use the controls to customize nodes\n• Click any emoji to explore the source code in a new tab\n\nStart organizing your knowledge network!'
                     },
                     status: {
                         ready: 'Ready',
@@ -513,12 +591,19 @@
             };
             
             // =====================================================================
-            // 🌱 TEMPLATES: Reusable Object Factories
+            // 🧩 TEMPLATES: Reusable Object Factories
             // =====================================================================
 
             /**
-             * @template System for creating consistent objects
-             * Provides factories for creating nodes, edges, and other application objects
+             * 🧩 Templates: Object factory system
+             * 
+             * Instead of having object creation spread throughout the code, we
+             * centralize the creation of all major objects through this template
+             * system. This ensures consistency and makes it easier to understand
+             * the structure of data in the application.
+             * 
+             * Think of these as "cookie cutters" that ensure every object
+             * has the expected properties and follows the same pattern.
              */
             const Templates = {
                 /**
@@ -557,12 +642,18 @@
             };
             
             // =====================================================================
-            // 🌱 STATE: Global Application State
+            // 🧠 STATE: Global Application State
             // =====================================================================
 
             /**
-             * @state Central state management
-             * Maintains the application state and provides methods for manipulation
+             * 🧠 State: Global application state management
+             * 
+             * This object centralizes all the application's changeable data in one
+             * place, making it easier to understand, track, and debug the current
+             * state of the system.
+             * 
+             * By keeping all state in one place, we avoid hidden state that would
+             * make the system harder to understand and maintain.
              */
             const State = {
                 /** Graph data containing nodes and edges */
@@ -672,12 +763,18 @@
             };
             
             // =====================================================================
-            // 🌱 DOM: Interface to DOM Elements
+            // 🛠️ DOM: Interface to DOM Elements
             // =====================================================================
 
             /**
-             * @dom Access to DOM elements
-             * Provides centralized access to all DOM elements used by the application
+             * 🛠️ DOM: Centralized DOM access
+             * 
+             * This module provides a single interface to all DOM elements used
+             * by the application. This makes it easier to find where elements
+             * are accessed and ensures consistent access patterns.
+             * 
+             * Instead of using document.getElementById() throughout the code,
+             * we gather all references in one place for better maintainability.
              */
             const DOM = {
                 /** Element references */
@@ -696,9 +793,9 @@
                     const ids = [
                         'network-canvas', 'add-node-btn', 'export-json-btn', 'export-csv-btn',
                         'node-name', 'node-content', 'update-node-btn', 'editor-title',
-                        'editor-subtitle', 'editor-placeholder', 'status', 'canvasContainer',
+                        'editor-subtitle', 'editor-placeholder', 'status',
                         'height-decrease', 'height-increase', 'width-decrease', 'width-increase',
-                        'toggle-style'
+                        'toggle-style', 'help-btn'
                     ];
                     
                     // Populate elements object
@@ -712,6 +809,9 @@
                     
                     // Ensure canvas is properly sized
                     this.resizeCanvas();
+                    
+                    // Initialize source explorer
+                    SourceExplorer.init();
                 },
                 
                 /**
@@ -725,12 +825,18 @@
             };
             
             // =====================================================================
-            // 🌱 UI: User Interface Management
+            // 🎨 UI: User Interface Management
             // =====================================================================
 
             /**
-             * @ui Interface management
-             * Handles updating the UI based on application state
+             * 🎨 UI: User interface controller
+             * 
+             * This module handles all updates to the user interface based on the
+             * current application state. It acts as a rendering layer between
+             * the state and the DOM.
+             * 
+             * By centralizing UI updates, we ensure consistent presentation and
+             * easier maintenance.
              */
             const UI = {
                 /**
@@ -804,12 +910,18 @@
             };
             
             // =====================================================================
-            // 🌱 RENDERER: Canvas Drawing System
+            // 🎨 RENDERER: Canvas Drawing System
             // =====================================================================
 
             /**
-             * @renderer Drawing system
-             * Handles all rendering operations on the canvas
+             * 🎨 Renderer: Visual drawing system
+             * 
+             * This module handles all drawing operations on the canvas, visualizing
+             * the nodes and edges in the network. It translates the abstract data
+             * model into a concrete visual representation.
+             * 
+             * By separating rendering logic from state and interaction logic,
+             * we make the code easier to understand and maintain.
              */
             const Renderer = {
                 /**
@@ -1050,12 +1162,18 @@
             };
             
             // =====================================================================
-            // 🌱 INPUT: User Interaction Handler
+            // 🧭 INPUT: User Interaction Handler
             // =====================================================================
 
             /**
-             * @input Interaction management
-             * Handles mouse and keyboard interactions
+             * 🧭 InputHandler: Interaction management
+             * 
+             * This module handles all user interactions with the application,
+             * including mouse events, keyboard input, and button clicks.
+             * 
+             * By centralizing input handling, we make it easier to understand
+             * how users interact with the system and how these interactions
+             * affect the application state.
              */
             const InputHandler = {
                 /**
@@ -1073,6 +1191,7 @@
                     DOM.elements['export-json-btn'].addEventListener('click', () => State.exportData('json'));
                     DOM.elements['export-csv-btn'].addEventListener('click', () => State.exportData('csv'));
                     DOM.elements['update-node-btn'].addEventListener('click', this.handleUpdateNode);
+                    DOM.elements['help-btn'].addEventListener('click', SourceExplorer.showHelp);
                     
                     // Node resize controls
                     DOM.elements['height-decrease'].addEventListener('click', () => this.handleResizeNode('height', -META.node.constraints.resizeStep));
@@ -1263,12 +1382,114 @@
             };
             
             // =====================================================================
-            // 🌱 EXPORT: Data Export Functionality
+            // 🔬 SOURCE EXPLORER: Browser-Based Code Exploration
             // =====================================================================
 
             /**
-             * @export Export functionality
-             * Handles exporting graph data to different formats
+             * 🔬 Source Explorer: Interactive code navigation
+             * 
+             * This module transforms every emoji in the application into a "knowledge portal"
+             * that opens a new browser tab showing the source code. It enables developers
+             * to directly connect the UI they're experiencing with the implementation
+             * behind it.
+             * 
+             * By making the relationship between interface and implementation explicit
+             * and accessible, it embodies constructivist principles of learning through
+             * direct exploration.
+             */
+            const SourceExplorer = {
+                /**
+                 * Initialize the Source Explorer
+                 * Sets up emoji click handlers
+                 */
+                init: function() {
+                    if (!META.sourceExplorer.enabled) return;
+                    
+                    // Add click handlers to all emoji explorer elements
+                    this.setupEmojiPortals();
+                    
+                    // Add help button handler
+                    DOM.elements['help-btn'].addEventListener('click', this.showHelp);
+                    
+                    Debug.log('Source Explorer initialized');
+                },
+                
+                /**
+                 * Set up all emoji portals in the UI
+                 */
+                setupEmojiPortals: function() {
+                    // Find all emoji portal elements
+                    const emojiElements = document.querySelectorAll(META.sourceExplorer.selector);
+                    
+                    // Add click handler to each
+                    emojiElements.forEach(element => {
+                        element.addEventListener('click', (e) => {
+                            // Prevent the event from triggering parent elements
+                            e.stopPropagation();
+                            
+                            // Get the emoji
+                            const emoji = element.textContent.trim();
+                            
+                            // Open source explorer for this emoji
+                            this.openSourceTab(emoji);
+                        });
+                    });
+                    
+                    Debug.log(`Set up ${emojiElements.length} emoji portals`);
+                },
+                
+                /**
+                 * Open a new browser tab with the source code
+                 * @param {string} emoji - Emoji to search for
+                 */
+                openSourceTab: function(emoji) {
+                    Debug.log(`Opening source tab for emoji: ${emoji}`);
+                    
+                    // Get the current page's source
+                    const currentUrl = window.location.href;
+                    
+                    // Use view-source protocol with the current URL
+                    const sourceUrl = `view-source:${currentUrl}`;
+                    
+                    // Open in a new tab - this will show the source code
+                    // Note: The ability to scroll to the specific emoji will depend
+                    // on browser support, as view-source doesn't support fragments
+                    window.open(sourceUrl, '_blank');
+                    
+                    // Show a status message with instructions
+                    UI.updateStatus(`Opened source code in new tab. Find "${emoji}" using Ctrl+F`, 5000);
+                },
+                
+                /**
+                 * Show help information
+                 */
+                showHelp: function() {
+                    // Create an alert explaining how to use the Source Explorer
+                    const helpText = `🔬 Source Explorer Help\n\n` +
+                                    `Every emoji in this application is a "knowledge portal" ` +
+                                    `that connects the interface to its implementation.\n\n` +
+                                    `• Hover over any emoji to see what part of the system it represents\n` +
+                                    `• Click any emoji to open a new tab with the source code\n` +
+                                    `• Use your browser's find feature (Ctrl+F) to locate the emoji in the source\n\n` +
+                                    `This allows you to directly explore how the application works by examining ` +
+                                    `the code behind the features you're interested in.`;
+                    
+                    alert(helpText);
+                }
+            };
+            
+            // =====================================================================
+            // 📤 EXPORT: Data Export Functionality
+            // =====================================================================
+
+            /**
+             * 📤 ExportManager: Data export system
+             * 
+             * This module handles exporting graph data to different formats,
+             * allowing users to save their work and share it with others.
+             * 
+             * By centralizing export logic, we ensure consistent export formats
+             * and avoid duplication of code.
              */
             const ExportManager = {
                 /**
@@ -1337,12 +1558,18 @@
             };
             
             // =====================================================================
-            // 🌱 DEBUG: Debugging Utilities
+            // 🐛 DEBUG: Debugging Utilities
             // =====================================================================
 
             /**
-             * @debug Debugging utilities
-             * Provides consistent debugging output
+             * 🐛 Debug: Debugging toolkit
+             * 
+             * This module provides consistent debugging output and error handling,
+             * making it easier to understand what's happening in the application
+             * during development and troubleshooting.
+             * 
+             * By centralizing debug functions, we ensure consistent logging formats
+             * and can easily enable or disable debug output.
              */
             const Debug = {
                 /**
@@ -1381,12 +1608,17 @@
             };
             
             // =====================================================================
-            // 🌱 APP: Application Initialization
+            // 🚀 APP: Application Initialization
             // =====================================================================
 
             /**
-             * @app Main application
-             * Handles initialization and startup
+             * 🚀 App: Main application controller
+             * 
+             * This module handles the initialization and startup of the application,
+             * ensuring all components are properly set up and connected.
+             * 
+             * It serves as the entry point and central coordinator for the
+             * application's lifecycle.
              */
             const App = {
                 /**
@@ -1408,7 +1640,7 @@
                     Renderer.draw();
                     
                     Debug.success('Application initialized');
-                    UI.updateStatus('Welcome to NodePad!');
+                    UI.updateStatus(`Welcome to NodePad v${META.version.number}!`);
                     
                     return this;
                 }
