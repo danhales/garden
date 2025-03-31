@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NodePad v1.🌱1.0</title>
+    <title>NodePad v1.🪴1.0</title>
     <!-- 
-        🔬 MICROSCOPE: SOURCE EXPLORER SYSTEM
+        NodePad v1.🪴1.0: Visual Knowledge Network
         
         Version History:
         v0.0.1 - Initial implementation with popup editor and basic node display
@@ -17,32 +17,20 @@
         v0.0.7 - Added ability to edit node names
         v0.1.0 - First minor version with stable core features and cleaned documentation
         v1.0.0 - Complete constructivist rewrite with knot-compacted architecture
-        v1.🌱1.0 - Tentative source explorer feature using browser tabs (experimental)
+        v1.🪴1.0 - Simplified circular nodes with emoji identifiers and hover information
         
         DocTrellis Feature Status:
-        🌱 Core Architecture - Seedling - Constructivist template system with metadata-driven design
-        🌱 Node Management - Seedling - Create, select, edit, and drag nodes
-        🌱 Edge Connections - Seedling - Connections between nodes
-        🌱 Network View - Seedling - Canvas-based visualization
+        🪴 Core Architecture - Potted Plant - Constructivist template system with metadata-driven design
+        🪴 Node Management - Potted Plant - Create, select, edit, and drag nodes
+        🪴 Edge Connections - Potted Plant - Connections between nodes
+        🪴 Network View - Potted Plant - Canvas-based visualization with emoji identifiers
         🌱 Export/Import - Seedling - JSON and CSV export functionality
-        🌱 Source Explorer - Seedling - Browser-based source code exploration
+        
+        Leaf Pile (Pruned Ideas):
+        🍂 Source Explorer - Browser-based source code exploration using emoji markers
+        🍂 Custom node styles - Multiple visual presentation options for node content
     -->
     <style>
-        /* 🧠 META System: Constructivist CSS Architecture
-           
-           This styling system is built as a self-teaching knowledge structure.
-           Variables aren't just for consistency - they're organized to reveal
-           relationships between values.
-           
-           For example, spacing follows mathematical relationships:
-           - We define a base unit (--space-unit: 8px)
-           - Other spaces are multiples/fractions of this unit
-           - Comments show the calculated values to aid understanding
-           
-           This helps developers build a mental model of the design system
-           simply by reading the code.
-        */
-        
         /* Base Variables - Single Source of Truth */
         :root {
             /* Color Palette */
@@ -85,10 +73,9 @@
             --transition-fast: 0.2s ease;
             --transition-normal: 0.3s ease;
             
-            /* Node Dimensions */
-            --node-min-width: 150px;
-            --node-min-height: 120px;
-            --node-header-height: 30px;
+            /* Node dimensions */
+            --node-size: 60px;
+            --node-emoji-size: 24px;
         }
         
         /* Reset and Base Styles */
@@ -112,7 +99,7 @@
             overflow: hidden;
         }
         
-        /* 🌱 Application Layout */
+        /* Application Layout */
         .header {
             background-color: var(--color-surface);
             padding: var(--space-md);
@@ -166,7 +153,7 @@
             overflow: hidden;
         }
         
-        /* 🌱 Controls */
+        /* Controls */
         .controls {
             display: flex;
             gap: var(--space-sm);
@@ -200,7 +187,7 @@
             background-color: var(--color-primary-dark);
         }
         
-        /* 🧠 Editor Styles */
+        /* Editor Styles */
         .editor-header {
             padding: var(--space-md);
             border-bottom: 1px solid var(--color-border);
@@ -211,6 +198,13 @@
             margin: 0 0 var(--space-xs) 0;
             font-size: var(--font-size-lg);
             font-weight: var(--font-weight-bold);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .node-emoji {
+            font-size: 1.2em;
         }
         
         .editor-subtitle {
@@ -245,6 +239,29 @@
             color: var(--color-text-muted);
         }
         
+        .emoji-input-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+        
+        .emoji-label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text-muted);
+        }
+        
+        #node-emoji-select {
+            padding: var(--space-sm);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-lg);
+            min-width: 60px;
+            cursor: pointer;
+        }
+        
         #node-name {
             width: 100%;
             padding: var(--space-sm);
@@ -252,7 +269,6 @@
             border-radius: var(--border-radius-sm);
             font-family: inherit;
             font-size: var(--font-size-base);
-            margin-bottom: var(--space-md);
             transition: border-color var(--transition-fast);
         }
         
@@ -286,71 +302,26 @@
             align-items: center;
         }
         
-        .size-controls {
-            display: flex;
-            gap: var(--space-md);
-        }
-        
-        .dimension-control {
-            display: flex;
-            align-items: center;
-            gap: var(--space-xs);
-        }
-        
-        .dimension-label {
-            display: flex;
-            align-items: center;
-            font-size: var(--font-size-lg);
-            margin-right: var(--space-xs);
-        }
-        
-        .size-btn {
-            width: 28px;
-            height: 28px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-lg);
-        }
-        
-        /* 🔬 Source Explorer Style */
-        .emoji-explorer {
-            cursor: pointer;
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform var(--transition-fast);
-        }
-        
-        .emoji-explorer:hover {
-            transform: scale(1.2);
-        }
-        
-        .emoji-explorer::after {
-            content: attr(data-tooltip);
+        /* Node tooltip */
+        .node-tooltip {
             position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: var(--space-xs) var(--space-sm);
-            background-color: var(--color-text);
+            background-color: rgba(0, 0, 0, 0.8);
             color: white;
+            padding: var(--space-xs) var(--space-sm);
             border-radius: var(--border-radius-sm);
             font-size: var(--font-size-sm);
-            white-space: nowrap;
             pointer-events: none;
+            z-index: 10;
             opacity: 0;
             transition: opacity var(--transition-fast);
-            z-index: 10;
+            max-width: 200px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
-        .emoji-explorer:hover::after {
-            opacity: 1;
-        }
-        
-        /* 🛠️ Status Indicator */
+        /* Status Indicator */
         .status {
             position: absolute;
             bottom: var(--space-sm);
@@ -361,27 +332,54 @@
             font-size: var(--font-size-base);
             color: var(--color-text-muted);
         }
+
+        /* Emoji picker dialog */
+        .emoji-picker {
+            position: absolute;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow);
+            padding: var(--space-md);
+            z-index: 100;
+            max-width: 300px;
+            display: none;
+        }
+        
+        .emoji-picker.active {
+            display: block;
+        }
+        
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+        
+        .emoji-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+        }
+        
+        .emoji-item:hover {
+            background-color: var(--color-surface-alt);
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 class="title">
-            <span class="emoji-explorer" data-tooltip="NodePad: Nonlinear Knowledge Network">📝</span> 
-            NodePad <span class="version">v1.🌱1.0</span>
-        </h1>
+        <h1 class="title">📝 NodePad <span class="version">v1.🪴1.0</span></h1>
         <div class="controls">
-            <button id="add-node-btn">
-                <span class="emoji-explorer" data-tooltip="Create a new connected node">🌱</span> Add Node
-            </button>
-            <button id="export-json-btn">
-                <span class="emoji-explorer" data-tooltip="Save as JSON file">📤</span> Export JSON
-            </button>
-            <button id="export-csv-btn">
-                <span class="emoji-explorer" data-tooltip="Save as CSV files">📤</span> Export CSVs
-            </button>
-            <button id="help-btn">
-                <span class="emoji-explorer" data-tooltip="Learn about Source Explorer">🔬</span> Source Explorer
-            </button>
+            <button id="add-node-btn">Add Node</button>
+            <button id="export-json-btn">Export JSON</button>
+            <button id="export-csv-btn">Export CSVs</button>
         </div>
     </div>
     
@@ -389,6 +387,7 @@
         <!-- Network View (Left Side) -->
         <div class="canvas-container">
             <canvas id="network-canvas"></canvas>
+            <div class="node-tooltip" id="node-tooltip"></div>
             <div class="status" id="status">Ready</div>
         </div>
         
@@ -404,79 +403,70 @@
                     Click on a node in the network view to edit its content
                 </div>
                 
-                <label class="name-label" for="node-name">Node Name:</label>
-                <input type="text" id="node-name" placeholder="Enter a name for this node">
+                <div class="emoji-input-container">
+                    <div>
+                        <label class="emoji-label" for="node-emoji-select">Node Icon:</label>
+                        <button id="node-emoji-select">🌱</button>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="name-label" for="node-name">Node Title:</label>
+                        <input type="text" id="node-name" placeholder="Enter a title for this node">
+                    </div>
+                </div>
                 
                 <textarea id="node-content" placeholder="Enter your notes here..."></textarea>
                 
                 <div class="editor-actions">
-                    <div class="size-controls">
-                        <div class="dimension-control">
-                            <span class="emoji-explorer dimension-label" data-tooltip="Adjust node height">↕️</span>
-                            <button class="size-btn" id="height-decrease">-</button>
-                            <button class="size-btn" id="height-increase">+</button>
-                        </div>
-                        <div class="dimension-control">
-                            <span class="emoji-explorer dimension-label" data-tooltip="Adjust node width">↔️</span>
-                            <button class="size-btn" id="width-decrease">-</button>
-                            <button class="size-btn" id="width-increase">+</button>
-                        </div>
-                        <div class="dimension-control">
-                            <span class="emoji-explorer dimension-label" data-tooltip="Change node style">🎨</span>
-                            <button class="size-btn" id="toggle-style">↺</button>
-                        </div>
-                    </div>
                     <button id="update-node-btn" class="primary">Update Node</button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Emoji Picker Dialog -->
+    <div class="emoji-picker" id="emoji-picker">
+        <h3>Select an Emoji</h3>
+        <div class="emoji-grid" id="emoji-grid"></div>
+    </div>
 
     <script>
         /**
-         * 🔬 NodePad v1.🌱1.0: A Constructivist Knowledge Network
+         * NodePad v1.🪴1.0: Visual Knowledge Network
          * 
-         * This application embodies constructivist programming principles:
-         * - Code as a learning artifact (self-documenting and explorable)
-         * - Learning through construction (interactive exploration of implementation)
-         * - Explicit over implicit patterns (metadata-driven architecture)
+         * A nonlinear note-taking application that represents ideas as 
+         * interconnected nodes in a visual network, making it easier to
+         * organize complex thoughts and relationships.
          * 
-         * The Source Explorer feature transforms every emoji into a knowledge portal
-         * that opens a new browser tab with the relevant source code section.
-         * 
-         * @author Constructivist Programming Team
-         * @version 1.🌱1.0
+         * @version 1.🪴1.0
          */
         
         document.addEventListener('DOMContentLoaded', function() {
             // =====================================================================
-            // 🧠 META-SYSTEM: Application Metadata and Configuration
+            // META-SYSTEM: Application Metadata and Configuration
             // =====================================================================
 
             /**
-             * 🧠 META: Application knowledge system
+             * META: Application knowledge system
              * 
-             * This object serves as a single source of truth for all application
-             * configuration, providing a centralized knowledge structure that reveals
-             * the relationships between all configurable parameters.
+             * Centralized configuration that serves as a single source of truth
+             * for all application parameters.
              * 
-             * By unifying configuration in one self-documenting structure, we make
-             * the system easier to understand, maintain, and extend.
+             * @version 1.🪴1.0 - Refactored for emoji node identifiers
              */
             const META = {
                 /** Application version information */
                 version: {
-                    number: '1.🌱1.0',
-                    name: 'Source Explorer Edition',
+                    number: '1.🪴1.0',
+                    name: 'Visual Knowledge Network',
                     date: '2025-03-31'
                 },
                 
                 /** Debug configuration */
                 debug: {
                     enabled: true,
-                    prefix: '🐛 NodePad',
+                    prefix: 'NodePad',
                     levels: {
-                        info: '📘',
+                        info: 'ℹ️',
                         warn: '⚠️',
                         error: '❌',
                         success: '✅'
@@ -486,54 +476,15 @@
                 /** Node configuration */
                 node: {
                     defaults: {
-                        width: 250,
-                        height: 200,
-                        style: 'standard',
+                        size: 60,
+                        emoji: '🌱',
                         content: ''
                     },
-                    constraints: {
-                        minWidth: 150,
-                        minHeight: 120,
-                        maxWidth: 500,
-                        maxHeight: 400,
-                        resizeStep: 20
+                    selected: {
+                        outlineWidth: 3,
+                        outlineColor: '#1890ff'
                     },
-                    rendering: {
-                        headerHeight: 30,
-                        textPadding: 15,
-                        lineHeight: 20,
-                        borderRadius: 4
-                    }
-                },
-                
-                /** Available node rendering styles */
-                nodeStyles: {
-                    standard: {
-                        id: 'standard',
-                        name: 'Standard',
-                        colors: {
-                            background: '#ffffff',
-                            selectedBackground: '#e6f7ff',
-                            header: '#f5f5f5',
-                            selectedHeader: '#bae7ff',
-                            border: '#d9d9d9',
-                            selectedBorder: '#1890ff',
-                            text: '#000000'
-                        }
-                    },
-                    minimal: {
-                        id: 'minimal',
-                        name: 'Minimal',
-                        colors: {
-                            background: '#f8f9fa',
-                            selectedBackground: '#e3f2fd',
-                            header: '#edf2f7',
-                            selectedHeader: '#bbdefb',
-                            border: '#cbd5e0',
-                            selectedBorder: '#64b5f6',
-                            text: '#1a202c'
-                        }
-                    }
+                    dragThreshold: 5  // Pixels of movement needed to start dragging
                 },
                 
                 /** Edge configuration */
@@ -566,44 +517,44 @@
                     }
                 },
                 
-                /** Source Explorer configuration */
-                sourceExplorer: {
-                    enabled: true,
-                    selector: '.emoji-explorer',
-                    helpMessage: 'Click any emoji to explore its source code in a new tab'
+                /** Emoji picker configuration */
+                emojiPicker: {
+                    emojis: [
+                        '🌱', '🌿', '🌳', '🍂', '🔮', '📝', '💡', '🔍', 
+                        '📊', '📈', '📉', '📌', '🔖', '📚', '🗂️', '📋',
+                        '✅', '❌', '⚠️', '❓', '❗', '💬', '🗨️', '🔄',
+                        '🧩', '⚙️', '🔧', '🔨', '⏱️', '📅', '🧠', '❤️'
+                    ]
                 },
                 
                 /** Templates for static text */
                 templates: {
                     welcome: {
-                        nodeName: 'Welcome Note',
-                        nodeContent: 'Welcome to NodePad!\n\nThis is a space for your interconnected thoughts and ideas.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Use the controls to customize nodes\n• Click any emoji to explore the source code in a new tab\n\nStart organizing your knowledge network!'
+                        emoji: '📝',
+                        name: 'Welcome to NodePad!',
+                        content: 'This is your first note in your visual knowledge network.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Each node has its own emoji identifier\n\nStart organizing your ideas!'
                     },
                     status: {
                         ready: 'Ready',
-                        selected: nodeId => `Selected: ${nodeId}`,
-                        created: nodeId => `Created node: ${nodeId}`,
-                        updated: nodeId => `Updated: ${nodeId}`,
-                        exported: format => `Exported ${format} file`,
-                        resized: dimension => `Resized ${dimension}`
+                        selected: nodeName => `Selected: ${nodeName}`,
+                        created: nodeName => `Created: ${nodeName}`,
+                        updated: nodeName => `Updated: ${nodeName}`,
+                        exported: format => `Exported ${format} file`
                     }
                 }
             };
             
             // =====================================================================
-            // 🧩 TEMPLATES: Reusable Object Factories
+            // TEMPLATES: Reusable Object Factories
             // =====================================================================
 
             /**
-             * 🧩 Templates: Object factory system
+             * Templates: Object factory system
              * 
-             * Instead of having object creation spread throughout the code, we
-             * centralize the creation of all major objects through this template
-             * system. This ensures consistency and makes it easier to understand
-             * the structure of data in the application.
+             * Provides consistent patterns for creating application objects
+             * like nodes and edges.
              * 
-             * Think of these as "cookie cutters" that ensure every object
-             * has the expected properties and follows the same pattern.
+             * @version 1.🪴1.0 - Updated for circular emoji nodes
              */
             const Templates = {
                 /**
@@ -616,13 +567,12 @@
                     
                     return {
                         id: id,
+                        emoji: props.emoji || META.node.defaults.emoji,
                         name: props.name || '',
                         content: props.content || META.node.defaults.content,
                         x: props.x || 0,
                         y: props.y || 0,
-                        width: props.width || META.node.defaults.width,
-                        height: props.height || META.node.defaults.height,
-                        style: props.style || META.node.defaults.style
+                        size: props.size || META.node.defaults.size
                     };
                 },
                 
@@ -642,18 +592,15 @@
             };
             
             // =====================================================================
-            // 🧠 STATE: Global Application State
+            // STATE: Global Application State
             // =====================================================================
 
             /**
-             * 🧠 State: Global application state management
+             * State: Global application state management
              * 
-             * This object centralizes all the application's changeable data in one
-             * place, making it easier to understand, track, and debug the current
-             * state of the system.
+             * Centralizes all application data and state management functions.
              * 
-             * By keeping all state in one place, we avoid hidden state that would
-             * make the system harder to understand and maintain.
+             * @version 1.🪴1.0 - Updated for simplified node structure
              */
             const State = {
                 /** Graph data containing nodes and edges */
@@ -667,8 +614,11 @@
                     selectedNode: null,
                     isDragging: false,
                     draggedNode: null,
+                    dragStartX: 0,
+                    dragStartY: 0,
                     dragOffsetX: 0,
-                    dragOffsetY: 0
+                    dragOffsetY: 0,
+                    hoveredNode: null
                 },
                 
                 /** Global counters */
@@ -687,7 +637,7 @@
                     Renderer.draw();
                     
                     if (node) {
-                        UI.updateStatus(META.templates.status.selected(node.name || node.id));
+                        UI.updateStatus(META.templates.status.selected(node.name));
                     } else {
                         UI.updateStatus(META.templates.status.ready);
                     }
@@ -726,8 +676,14 @@
                     // Search from front to back (later nodes appear on top)
                     for (let i = this.graph.nodes.length - 1; i >= 0; i--) {
                         const node = this.graph.nodes[i];
-                        if (x >= node.x && x <= node.x + node.width &&
-                            y >= node.y && y <= node.y + node.height) {
+                        
+                        // Distance from point to node center
+                        const dx = x - (node.x + node.size / 2);
+                        const dy = y - (node.y + node.size / 2);
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // If distance is less than radius, point is inside circle
+                        if (distance <= node.size / 2) {
                             return node;
                         }
                     }
@@ -735,7 +691,7 @@
                 },
                 
                 /**
-                 * Updates node content and name
+                 * Updates node properties
                  * @param {string} nodeId - ID of node to update
                  * @param {Object} changes - Properties to update
                  */
@@ -746,7 +702,7 @@
                     // Apply changes
                     Object.assign(node, changes);
                     Renderer.draw();
-                    UI.updateStatus(META.templates.status.updated(node.name || node.id));
+                    UI.updateStatus(META.templates.status.updated(node.name));
                 },
                 
                 /**
@@ -763,18 +719,15 @@
             };
             
             // =====================================================================
-            // 🛠️ DOM: Interface to DOM Elements
+            // DOM: Interface to DOM Elements
             // =====================================================================
 
             /**
-             * 🛠️ DOM: Centralized DOM access
+             * DOM: Centralized DOM access
              * 
-             * This module provides a single interface to all DOM elements used
-             * by the application. This makes it easier to find where elements
-             * are accessed and ensures consistent access patterns.
+             * Provides a single interface to all DOM elements used by the application.
              * 
-             * Instead of using document.getElementById() throughout the code,
-             * we gather all references in one place for better maintainability.
+             * @version 1.🪴1.0 - Added tooltip and emoji picker elements
              */
             const DOM = {
                 /** Element references */
@@ -793,9 +746,8 @@
                     const ids = [
                         'network-canvas', 'add-node-btn', 'export-json-btn', 'export-csv-btn',
                         'node-name', 'node-content', 'update-node-btn', 'editor-title',
-                        'editor-subtitle', 'editor-placeholder', 'status',
-                        'height-decrease', 'height-increase', 'width-decrease', 'width-increase',
-                        'toggle-style', 'help-btn'
+                        'editor-subtitle', 'editor-placeholder', 'status', 'node-tooltip',
+                        'node-emoji-select', 'emoji-picker', 'emoji-grid'
                     ];
                     
                     // Populate elements object
@@ -810,8 +762,8 @@
                     // Ensure canvas is properly sized
                     this.resizeCanvas();
                     
-                    // Initialize source explorer
-                    SourceExplorer.init();
+                    // Initialize emoji picker
+                    this.initEmojiPicker();
                 },
                 
                 /**
@@ -821,22 +773,74 @@
                     const container = document.querySelector('.canvas-container');
                     this.canvas.width = container.offsetWidth;
                     this.canvas.height = container.offsetHeight;
+                },
+                
+                /**
+                 * Initialize emoji picker with available options
+                 */
+                initEmojiPicker: function() {
+                    const grid = this.elements['emoji-grid'];
+                    if (!grid) return;
+                    
+                    // Clear existing items
+                    grid.innerHTML = '';
+                    
+                    // Add all emojis
+                    META.emojiPicker.emojis.forEach(emoji => {
+                        const item = document.createElement('div');
+                        item.className = 'emoji-item';
+                        item.textContent = emoji;
+                        item.setAttribute('data-emoji', emoji);
+                        item.addEventListener('click', () => {
+                            if (State.ui.selectedNode) {
+                                // Update the emoji select button
+                                this.elements['node-emoji-select'].textContent = emoji;
+                                
+                                // Hide the picker
+                                this.elements['emoji-picker'].classList.remove('active');
+                            }
+                        });
+                        
+                        grid.appendChild(item);
+                    });
+                    
+                    // Set up emoji select button
+                    const emojiSelect = this.elements['node-emoji-select'];
+                    const emojiPicker = this.elements['emoji-picker'];
+                    
+                    if (emojiSelect && emojiPicker) {
+                        emojiSelect.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            
+                            // Position the picker near the button
+                            const rect = emojiSelect.getBoundingClientRect();
+                            emojiPicker.style.top = `${rect.bottom + 5}px`;
+                            emojiPicker.style.left = `${rect.left}px`;
+                            
+                            // Toggle visibility
+                            emojiPicker.classList.toggle('active');
+                        });
+                        
+                        // Close picker when clicking outside
+                        document.addEventListener('click', (e) => {
+                            if (!emojiPicker.contains(e.target) && e.target !== emojiSelect) {
+                                emojiPicker.classList.remove('active');
+                            }
+                        });
+                    }
                 }
             };
             
             // =====================================================================
-            // 🎨 UI: User Interface Management
+            // UI: User Interface Management
             // =====================================================================
 
             /**
-             * 🎨 UI: User interface controller
+             * UI: User interface controller
              * 
-             * This module handles all updates to the user interface based on the
-             * current application state. It acts as a rendering layer between
-             * the state and the DOM.
+             * Handles all updates to the user interface based on application state.
              * 
-             * By centralizing UI updates, we ensure consistent presentation and
-             * easier maintenance.
+             * @version 1.🪴1.0 - Updated for emoji node identifiers
              */
             const UI = {
                 /**
@@ -845,12 +849,18 @@
                  */
                 updateEditor: function(node) {
                     const placeholderEl = DOM.elements['editor-placeholder'];
+                    const emojiSelectEl = DOM.elements['node-emoji-select'];
                     const nameEl = DOM.elements['node-name'];
                     const contentEl = DOM.elements['node-content'];
                     const titleEl = DOM.elements['editor-title'];
                     const subtitleEl = DOM.elements['editor-subtitle'];
                     const updateBtnEl = DOM.elements['update-node-btn'];
-                    const controls = document.querySelectorAll('.dimension-control');
+                    const emojiPickerEl = DOM.elements['emoji-picker'];
+                    
+                    // Hide emoji picker if open
+                    if (emojiPickerEl) {
+                        emojiPickerEl.classList.remove('active');
+                    }
                     
                     if (node) {
                         // Show editor with node content
@@ -858,31 +868,59 @@
                         nameEl.style.display = 'block';
                         contentEl.style.display = 'block';
                         updateBtnEl.style.display = 'block';
+                        emojiSelectEl.parentElement.parentElement.style.display = 'flex';
                         
                         // Set content
+                        emojiSelectEl.textContent = node.emoji;
                         nameEl.value = node.name || '';
                         contentEl.value = node.content || '';
                         
                         // Update headings
-                        titleEl.textContent = `Editing ${node.name || node.id}`;
+                        titleEl.innerHTML = `<span class="node-emoji">${node.emoji}</span> Editing ${node.name || 'Untitled Node'}`;
                         subtitleEl.textContent = 'Make changes and click "Update Node" to save';
-                        
-                        // Show controls
-                        controls.forEach(c => c.style.display = 'flex');
                     } else {
                         // Hide editor, show placeholder
                         placeholderEl.style.display = 'flex';
                         nameEl.style.display = 'none';
                         contentEl.style.display = 'none';
                         updateBtnEl.style.display = 'none';
+                        emojiSelectEl.parentElement.parentElement.style.display = 'none';
                         
                         // Update headings
                         titleEl.textContent = 'Node Editor';
                         subtitleEl.textContent = 'Select a node to edit its content';
-                        
-                        // Hide controls
-                        controls.forEach(c => c.style.display = 'none');
                     }
+                },
+                
+                /**
+                 * Show node tooltip at specified position
+                 * @param {Object} node - Node to show tooltip for
+                 * @param {number} x - X position
+                 * @param {number} y - Y position 
+                 */
+                showNodeTooltip: function(node, x, y) {
+                    const tooltip = DOM.elements['node-tooltip'];
+                    if (!tooltip) return;
+                    
+                    // Set tooltip content and position
+                    tooltip.textContent = node.name || 'Untitled Node';
+                    tooltip.style.left = `${x}px`;
+                    tooltip.style.top = `${y - 30}px`;
+                    tooltip.style.opacity = '1';
+                    
+                    // Update hovered node reference
+                    State.ui.hoveredNode = node;
+                },
+                
+                /**
+                 * Hide node tooltip
+                 */
+                hideNodeTooltip: function() {
+                    const tooltip = DOM.elements['node-tooltip'];
+                    if (!tooltip) return;
+                    
+                    tooltip.style.opacity = '0';
+                    State.ui.hoveredNode = null;
                 },
                 
                 /**
@@ -902,7 +940,7 @@
                     setTimeout(() => {
                         if (statusEl.textContent === message) {
                             statusEl.textContent = State.ui.selectedNode ? 
-                                META.templates.status.selected(State.ui.selectedNode.name || State.ui.selectedNode.id) : 
+                                META.templates.status.selected(State.ui.selectedNode.name || 'Untitled Node') : 
                                 META.templates.status.ready;
                         }
                     }, duration);
@@ -910,18 +948,16 @@
             };
             
             // =====================================================================
-            // 🎨 RENDERER: Canvas Drawing System
+            // RENDERER: Canvas Drawing System
             // =====================================================================
 
             /**
-             * 🎨 Renderer: Visual drawing system
+             * Renderer: Visual drawing system
              * 
-             * This module handles all drawing operations on the canvas, visualizing
-             * the nodes and edges in the network. It translates the abstract data
-             * model into a concrete visual representation.
+             * Handles all drawing operations on the canvas, visualizing
+             * the nodes and edges in the network.
              * 
-             * By separating rendering logic from state and interaction logic,
-             * we make the code easier to understand and maintain.
+             * @version 1.🪴1.0 - Completely rewritten for circular emoji nodes
              */
             const Renderer = {
                 /**
@@ -962,10 +998,10 @@
                         if (!sourceNode || !targetNode) return;
                         
                         // Calculate connection points (center of nodes)
-                        const sourceX = sourceNode.x + sourceNode.width / 2;
-                        const sourceY = sourceNode.y + sourceNode.height / 2;
-                        const targetX = targetNode.x + targetNode.width / 2;
-                        const targetY = targetNode.y + targetNode.height / 2;
+                        const sourceX = sourceNode.x + sourceNode.size / 2;
+                        const sourceY = sourceNode.y + sourceNode.size / 2;
+                        const targetX = targetNode.x + targetNode.size / 2;
+                        const targetY = targetNode.y + targetNode.size / 2;
                         
                         // Draw connecting line
                         ctx.beginPath();
@@ -993,187 +1029,57 @@
                 drawNode: function(node) {
                     const ctx = DOM.ctx;
                     const isSelected = node === State.ui.selectedNode;
-                    const styleTemplate = META.nodeStyles[node.style] || META.nodeStyles.standard;
-                    const colors = styleTemplate.colors;
-                    const headerHeight = META.node.rendering.headerHeight;
-                    const textPadding = META.node.rendering.textPadding;
-                    const lineHeight = META.node.rendering.lineHeight;
-                    const borderRadius = META.node.rendering.borderRadius;
                     
-                    // Set up shadow for depth
-                    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-                    ctx.shadowBlur = 5;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
+                    // Calculate center position
+                    const centerX = node.x + node.size / 2;
+                    const centerY = node.y + node.size / 2;
+                    const radius = node.size / 2;
                     
-                    // Fill and stroke settings based on selection state
-                    ctx.fillStyle = isSelected ? colors.selectedBackground : colors.background;
-                    ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
-                    ctx.lineWidth = isSelected ? 2 : 1;
-                    
-                    // Draw main rectangle with rounded corners
+                    // Draw node background circle
                     ctx.beginPath();
-                    this.roundRect(ctx, node.x, node.y, node.width, node.height, borderRadius);
-                    ctx.fill();
-                    ctx.stroke();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                     
-                    // Reset shadow for other elements
-                    ctx.shadowColor = 'transparent';
-                    ctx.shadowBlur = 0;
-                    ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 0;
+                    // Fill with gradient
+                    const gradient = ctx.createRadialGradient(
+                        centerX, centerY, radius * 0.7,
+                        centerX, centerY, radius
+                    );
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(1, '#f0f0f0');
                     
-                    // Draw header background
-                    ctx.fillStyle = isSelected ? colors.selectedHeader : colors.header;
-                    ctx.beginPath();
-                    this.roundRect(ctx, node.x, node.y, node.width, headerHeight, 
-                                   [borderRadius, borderRadius, 0, 0]);
+                    ctx.fillStyle = gradient;
                     ctx.fill();
                     
-                    // Draw header separator line
-                    ctx.strokeStyle = isSelected ? colors.selectedBorder : colors.border;
-                    ctx.beginPath();
-                    ctx.moveTo(node.x, node.y + headerHeight);
-                    ctx.lineTo(node.x + node.width, node.y + headerHeight);
-                    ctx.stroke();
-                    
-                    // Draw node name or ID in header
-                    ctx.fillStyle = colors.text;
-                    ctx.font = `bold 14px var(--font-family)`;
-                    const displayName = node.name || node.id;
-                    ctx.fillText(displayName, node.x + textPadding, node.y + headerHeight - 10);
-                    
-                    // Draw content with word wrapping
-                    ctx.font = `14px var(--font-family)`;
-                    
-                    // Get wrapped text lines
-                    const maxWidth = node.width - (textPadding * 2);
-                    const wrappedText = this.wrapText(ctx, node.content, maxWidth);
-                    
-                    // Draw each line of text
-                    wrappedText.forEach((line, index) => {
-                        const y = node.y + headerHeight + textPadding + (index * lineHeight);
-                        // Only draw if within node bounds
-                        if (y < node.y + node.height - textPadding) {
-                            ctx.fillText(line, node.x + textPadding, y);
-                        }
-                    });
-                    
-                    // Indicate if content is truncated
-                    const contentHeight = wrappedText.length * lineHeight;
-                    const maxVisibleHeight = node.height - headerHeight - (textPadding * 2);
-                    
-                    if (contentHeight > maxVisibleHeight) {
-                        ctx.fillStyle = '#999999';
-                        ctx.fillText('...', node.x + textPadding, node.y + node.height - textPadding);
-                    }
-                    
-                    // Draw edit indicator if selected
+                    // Draw outline, thicker if selected
                     if (isSelected) {
-                        ctx.fillStyle = colors.selectedBorder;
-                        ctx.font = '12px var(--font-family)';
-                        ctx.fillText('✎ Edit', node.x + node.width - 40, node.y + node.height - 10);
-                    }
-                },
-                
-                /**
-                 * Draws a rounded rectangle
-                 * @param {CanvasRenderingContext2D} ctx - Canvas context
-                 * @param {number} x - X coordinate
-                 * @param {number} y - Y coordinate
-                 * @param {number} width - Rectangle width
-                 * @param {number} height - Rectangle height
-                 * @param {number|Array} radius - Corner radius or array of corner radii
-                 */
-                roundRect: function(ctx, x, y, width, height, radius) {
-                    // Handle different radius specifications
-                    if (typeof radius === 'number') {
-                        radius = {tl: radius, tr: radius, br: radius, bl: radius};
-                    } else if (Array.isArray(radius)) {
-                        const [tl, tr, br, bl] = [...radius, ...Array(4-radius.length).fill(0)];
-                        radius = {tl, tr, br, bl};
+                        ctx.strokeStyle = META.node.selected.outlineColor;
+                        ctx.lineWidth = META.node.selected.outlineWidth;
                     } else {
-                        radius = {tl: 0, tr: 0, br: 0, bl: 0};
+                        ctx.strokeStyle = '#d9d9d9';
+                        ctx.lineWidth = 1;
                     }
                     
-                    // Draw rounded rectangle path
-                    ctx.beginPath();
-                    ctx.moveTo(x + radius.tl, y);
-                    ctx.lineTo(x + width - radius.tr, y);
-                    ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-                    ctx.lineTo(x + width, y + height - radius.br);
-                    ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-                    ctx.lineTo(x + radius.bl, y + height);
-                    ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-                    ctx.lineTo(x, y + radius.tl);
-                    ctx.quadraticCurveTo(x, y, x + radius.tl, y);
-                    ctx.closePath();
-                },
-                
-                /**
-                 * Wraps text to fit within a specified width
-                 * @param {CanvasRenderingContext2D} ctx - Canvas context
-                 * @param {string} text - Text to wrap
-                 * @param {number} maxWidth - Maximum width for the text
-                 * @returns {Array} Array of text lines
-                 */
-                wrapText: function(ctx, text, maxWidth) {
-                    if (!text) return [];
+                    ctx.stroke();
                     
-                    const lines = [];
-                    
-                    // Handle multi-paragraph text
-                    const paragraphs = text.split('\n');
-                    
-                    paragraphs.forEach(paragraph => {
-                        // Add empty line for empty paragraphs
-                        if (paragraph === '') {
-                            lines.push('');
-                            return;
-                        }
-                        
-                        // Split paragraph into words
-                        const words = paragraph.split(' ');
-                        let currentLine = '';
-                        
-                        // Process each word
-                        words.forEach(word => {
-                            // Try adding the word to the current line
-                            const testLine = currentLine ? currentLine + ' ' + word : word;
-                            const metrics = ctx.measureText(testLine);
-                            
-                            // If the line becomes too long, start a new one
-                            if (metrics.width > maxWidth && currentLine !== '') {
-                                lines.push(currentLine);
-                                currentLine = word;
-                            } else {
-                                currentLine = testLine;
-                            }
-                        });
-                        
-                        // Add the last line
-                        if (currentLine) {
-                            lines.push(currentLine);
-                        }
-                    });
-                    
-                    return lines;
+                    // Draw emoji in center
+                    ctx.font = `${node.size * 0.4}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.emoji, centerX, centerY);
                 }
             };
             
             // =====================================================================
-            // 🧭 INPUT: User Interaction Handler
+            // INPUT: User Interaction Handler
             // =====================================================================
 
             /**
-             * 🧭 InputHandler: Interaction management
+             * InputHandler: Interaction management
              * 
-             * This module handles all user interactions with the application,
+             * Handles all user interactions with the application,
              * including mouse events, keyboard input, and button clicks.
              * 
-             * By centralizing input handling, we make it easier to understand
-             * how users interact with the system and how these interactions
-             * affect the application state.
+             * @version 1.🪴1.0 - Updated for circular node interactions
              */
             const InputHandler = {
                 /**
@@ -1191,14 +1097,6 @@
                     DOM.elements['export-json-btn'].addEventListener('click', () => State.exportData('json'));
                     DOM.elements['export-csv-btn'].addEventListener('click', () => State.exportData('csv'));
                     DOM.elements['update-node-btn'].addEventListener('click', this.handleUpdateNode);
-                    DOM.elements['help-btn'].addEventListener('click', SourceExplorer.showHelp);
-                    
-                    // Node resize controls
-                    DOM.elements['height-decrease'].addEventListener('click', () => this.handleResizeNode('height', -META.node.constraints.resizeStep));
-                    DOM.elements['height-increase'].addEventListener('click', () => this.handleResizeNode('height', META.node.constraints.resizeStep));
-                    DOM.elements['width-decrease'].addEventListener('click', () => this.handleResizeNode('width', -META.node.constraints.resizeStep));
-                    DOM.elements['width-increase'].addEventListener('click', () => this.handleResizeNode('width', META.node.constraints.resizeStep));
-                    DOM.elements['toggle-style'].addEventListener('click', this.handleToggleStyle);
                     
                     // Window resize event
                     window.addEventListener('resize', () => {
@@ -1221,11 +1119,16 @@
                     const node = State.findNodeAt(x, y);
                     
                     if (node) {
-                        // Start dragging
-                        State.ui.isDragging = true;
+                        // Set drag start position
+                        State.ui.dragStartX = x;
+                        State.ui.dragStartY = y;
                         State.ui.draggedNode = node;
+                        
+                        // Calculate offset from the top-left corner of the node
                         State.ui.dragOffsetX = x - node.x;
                         State.ui.dragOffsetY = y - node.y;
+                        
+                        // Don't set isDragging yet - wait for movement threshold
                         
                         // Change cursor
                         DOM.canvas.style.cursor = 'grabbing';
@@ -1241,16 +1144,38 @@
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
                     
-                    // Handle dragging
-                    if (State.ui.isDragging && State.ui.draggedNode) {
-                        // Update node position
-                        State.ui.draggedNode.x = x - State.ui.dragOffsetX;
-                        State.ui.draggedNode.y = y - State.ui.dragOffsetY;
-                        Renderer.draw();
+                    // Handle dragging - wait for movement threshold
+                    if (State.ui.draggedNode) {
+                        // Check if we've moved enough to start dragging
+                        const dragDistance = Math.sqrt(
+                            Math.pow(x - State.ui.dragStartX, 2) + 
+                            Math.pow(y - State.ui.dragStartY, 2)
+                        );
+                        
+                        if (dragDistance >= META.node.dragThreshold || State.ui.isDragging) {
+                            // Start dragging if we haven't already
+                            State.ui.isDragging = true;
+                            
+                            // Update node position
+                            State.ui.draggedNode.x = x - State.ui.dragOffsetX;
+                            State.ui.draggedNode.y = y - State.ui.dragOffsetY;
+                            Renderer.draw();
+                        }
                     } else {
-                        // Update cursor style based on hover
-                        const node = State.findNodeAt(x, y);
-                        DOM.canvas.style.cursor = node ? 'grab' : 'default';
+                        // Check for node hovering for tooltip
+                        const hoveredNode = State.findNodeAt(x, y);
+                        
+                        if (hoveredNode) {
+                            // Show tooltip
+                            UI.showNodeTooltip(hoveredNode, x, y);
+                            // Update cursor
+                            DOM.canvas.style.cursor = 'grab';
+                        } else {
+                            // Hide tooltip
+                            UI.hideNodeTooltip();
+                            // Reset cursor
+                            DOM.canvas.style.cursor = 'default';
+                        }
                     }
                 },
                 
@@ -1271,7 +1196,7 @@
                  * @param {MouseEvent} e - Mouse event
                  */
                 handleClick: function(e) {
-                    // Ignore if we just finished dragging
+                    // Ignore if we were dragging
                     if (State.ui.isDragging) return;
                     
                     // Get mouse position
@@ -1290,15 +1215,16 @@
                 handleAddNode: function() {
                     // Calculate position for new node
                     const canvas = DOM.canvas;
-                    const centerX = canvas.width / 2 - META.node.defaults.width / 2;
-                    const centerY = canvas.height / 2 - META.node.defaults.height / 2;
+                    const nodeSize = META.node.defaults.size;
+                    const centerX = canvas.width / 2 - nodeSize / 2;
+                    const centerY = canvas.height / 2 - nodeSize / 2;
                     
                     // Add offset if there's a selected node
                     let x = centerX;
                     let y = centerY;
                     
                     if (State.ui.selectedNode) {
-                        x = State.ui.selectedNode.x + State.ui.selectedNode.width + 50;
+                        x = State.ui.selectedNode.x + nodeSize * 2;
                         y = State.ui.selectedNode.y;
                         
                         // Create edge from selected to new node
@@ -1309,14 +1235,15 @@
                         // Create node at center if no selection
                         const newNode = State.addNode({ 
                             x, y, 
-                            name: META.templates.welcome.nodeName,
-                            content: META.templates.welcome.nodeContent
+                            emoji: META.templates.welcome.emoji,
+                            name: META.templates.welcome.name,
+                            content: META.templates.welcome.content
                         });
                         State.selectNode(newNode);
                     }
                     
                     Renderer.draw();
-                    UI.updateStatus(META.templates.status.created(State.ui.selectedNode.id));
+                    UI.updateStatus(META.templates.status.created(State.ui.selectedNode.name));
                 },
                 
                 /**
@@ -1326,170 +1253,33 @@
                     if (!State.ui.selectedNode) return;
                     
                     // Get values from editor
+                    const emojiEl = DOM.elements['node-emoji-select'];
                     const nameEl = DOM.elements['node-name'];
                     const contentEl = DOM.elements['node-content'];
                     
                     // Update node
                     State.updateNode(State.ui.selectedNode.id, {
+                        emoji: emojiEl.textContent,
                         name: nameEl.value,
                         content: contentEl.value
                     });
-                },
-                
-                /**
-                 * Handles resizing a node
-                 * @param {string} dimension - Dimension to resize ('width' or 'height')
-                 * @param {number} delta - Amount to change dimension
-                 */
-                handleResizeNode: function(dimension, delta) {
-                    if (!State.ui.selectedNode) return;
                     
-                    const node = State.ui.selectedNode;
-                    const constraints = META.node.constraints;
-                    
-                    // Apply resize with constraints
-                    if (dimension === 'width') {
-                        const newWidth = node.width + delta;
-                        node.width = Math.max(constraints.minWidth, Math.min(constraints.maxWidth, newWidth));
-                    } else if (dimension === 'height') {
-                        const newHeight = node.height + delta;
-                        node.height = Math.max(constraints.minHeight, Math.min(constraints.maxHeight, newHeight));
-                    }
-                    
-                    Renderer.draw();
-                    UI.updateStatus(META.templates.status.resized(dimension));
-                },
-                
-                /**
-                 * Handles toggling node style
-                 */
-                handleToggleStyle: function() {
-                    if (!State.ui.selectedNode) return;
-                    
-                    const node = State.ui.selectedNode;
-                    const styles = Object.keys(META.nodeStyles);
-                    
-                    // Find current style index
-                    const currentIndex = styles.indexOf(node.style);
-                    
-                    // Get next style (or circle back to first)
-                    const nextIndex = (currentIndex + 1) % styles.length;
-                    node.style = styles[nextIndex];
-                    
-                    Renderer.draw();
-                    UI.updateStatus(`Style changed to ${META.nodeStyles[node.style].name}`);
+                    // Update editor title
+                    const titleEl = DOM.elements['editor-title'];
+                    titleEl.innerHTML = `<span class="node-emoji">${emojiEl.textContent}</span> Editing ${nameEl.value || 'Untitled Node'}`;
                 }
             };
             
             // =====================================================================
-            // 🔬 SOURCE EXPLORER: Browser-Based Code Exploration
+            // EXPORT: Data Export Functionality
             // =====================================================================
 
             /**
-             * 🔬 Source Explorer: Interactive code navigation
+             * ExportManager: Data export system
              * 
-             * This module transforms every emoji in the application into a "knowledge portal"
-             * that opens a new browser tab showing the source code. It enables developers
-             * to directly connect the UI they're experiencing with the implementation
-             * behind it.
+             * Handles exporting graph data to different formats.
              * 
-             * By making the relationship between interface and implementation explicit
-             * and accessible, it embodies constructivist principles of learning through
-             * direct exploration.
-             */
-            const SourceExplorer = {
-                /**
-                 * Initialize the Source Explorer
-                 * Sets up emoji click handlers
-                 */
-                init: function() {
-                    if (!META.sourceExplorer.enabled) return;
-                    
-                    // Add click handlers to all emoji explorer elements
-                    this.setupEmojiPortals();
-                    
-                    // Add help button handler
-                    DOM.elements['help-btn'].addEventListener('click', this.showHelp);
-                    
-                    Debug.log('Source Explorer initialized');
-                },
-                
-                /**
-                 * Set up all emoji portals in the UI
-                 */
-                setupEmojiPortals: function() {
-                    // Find all emoji portal elements
-                    const emojiElements = document.querySelectorAll(META.sourceExplorer.selector);
-                    
-                    // Add click handler to each
-                    emojiElements.forEach(element => {
-                        element.addEventListener('click', (e) => {
-                            // Prevent the event from triggering parent elements
-                            e.stopPropagation();
-                            
-                            // Get the emoji
-                            const emoji = element.textContent.trim();
-                            
-                            // Open source explorer for this emoji
-                            this.openSourceTab(emoji);
-                        });
-                    });
-                    
-                    Debug.log(`Set up ${emojiElements.length} emoji portals`);
-                },
-                
-                /**
-                 * Open a new browser tab with the source code
-                 * @param {string} emoji - Emoji to search for
-                 */
-                openSourceTab: function(emoji) {
-                    Debug.log(`Opening source tab for emoji: ${emoji}`);
-                    
-                    // Get the current page's source
-                    const currentUrl = window.location.href;
-                    
-                    // Use view-source protocol with the current URL
-                    const sourceUrl = `view-source:${currentUrl}`;
-                    
-                    // Open in a new tab - this will show the source code
-                    // Note: The ability to scroll to the specific emoji will depend
-                    // on browser support, as view-source doesn't support fragments
-                    window.open(sourceUrl, '_blank');
-                    
-                    // Show a status message with instructions
-                    UI.updateStatus(`Opened source code in new tab. Find "${emoji}" using Ctrl+F`, 5000);
-                },
-                
-                /**
-                 * Show help information
-                 */
-                showHelp: function() {
-                    // Create an alert explaining how to use the Source Explorer
-                    const helpText = `🔬 Source Explorer Help\n\n` +
-                                    `Every emoji in this application is a "knowledge portal" ` +
-                                    `that connects the interface to its implementation.\n\n` +
-                                    `• Hover over any emoji to see what part of the system it represents\n` +
-                                    `• Click any emoji to open a new tab with the source code\n` +
-                                    `• Use your browser's find feature (Ctrl+F) to locate the emoji in the source\n\n` +
-                                    `This allows you to directly explore how the application works by examining ` +
-                                    `the code behind the features you're interested in.`;
-                    
-                    alert(helpText);
-                }
-            };
-            
-            // =====================================================================
-            // 📤 EXPORT: Data Export Functionality
-            // =====================================================================
-
-            /**
-             * 📤 ExportManager: Data export system
-             * 
-             * This module handles exporting graph data to different formats,
-             * allowing users to save their work and share it with others.
-             * 
-             * By centralizing export logic, we ensure consistent export formats
-             * and avoid duplication of code.
+             * @version 1.🪴1.0 - Updated for new node structure
              */
             const ExportManager = {
                 /**
@@ -1509,13 +1299,14 @@
                  */
                 toCsv: function() {
                     // Create nodes CSV
-                    const nodeHeader = 'id,name,content,x,y,width,height,style\n';
+                    const nodeHeader = 'id,emoji,name,content,x,y,size\n';
                     const nodeRows = State.graph.nodes.map(node => {
                         // Escape content for CSV
                         const escapedContent = `"${node.content.replace(/"/g, '""')}"`;
                         const escapedName = `"${(node.name || '').replace(/"/g, '""')}"`;
+                        const escapedEmoji = `"${node.emoji}"`;
                         
-                        return `${node.id},${escapedName},${escapedContent},${node.x},${node.y},${node.width},${node.height},${node.style}`;
+                        return `${node.id},${escapedEmoji},${escapedName},${escapedContent},${node.x},${node.y},${node.size}`;
                     }).join('\n');
                     
                     const nodesCSV = nodeHeader + nodeRows;
@@ -1558,18 +1349,15 @@
             };
             
             // =====================================================================
-            // 🐛 DEBUG: Debugging Utilities
+            // DEBUG: Debugging Utilities
             // =====================================================================
 
             /**
-             * 🐛 Debug: Debugging toolkit
+             * Debug: Debugging toolkit
              * 
-             * This module provides consistent debugging output and error handling,
-             * making it easier to understand what's happening in the application
-             * during development and troubleshooting.
+             * Provides consistent debugging output and error handling.
              * 
-             * By centralizing debug functions, we ensure consistent logging formats
-             * and can easily enable or disable debug output.
+             * @version 1.🪴1.0 - Maintained from previous version
              */
             const Debug = {
                 /**
@@ -1608,17 +1396,15 @@
             };
             
             // =====================================================================
-            // 🚀 APP: Application Initialization
+            // APP: Application Initialization
             // =====================================================================
 
             /**
-             * 🚀 App: Main application controller
+             * App: Main application controller
              * 
-             * This module handles the initialization and startup of the application,
-             * ensuring all components are properly set up and connected.
+             * Handles the initialization and startup of the application.
              * 
-             * It serves as the entry point and central coordinator for the
-             * application's lifecycle.
+             * @version 1.🪴1.0 - Maintained from previous version
              */
             const App = {
                 /**
