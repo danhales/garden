@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataBraid</title>
+    <style>
+        /* 🌱 Core Variables - Knowledge Knot */
+        :root {
+            /* Colors - Algorithmic progression */
+            --color-bg: #0a0a1a;
+            --color-table-bg: rgba(30, 30, 50, 0.5);
+            --color-cell-bg: rgba(40, 40, 70, 0.8);
+            --color-cell-hover: rgba(60, 60, 100, 0.9);
+            --color-text: #e0e0f0;
+            --color-muted: #8080a0;
+            --color-header: #a0a0ff;
+            --color-line: #ff6b6b;
+            --color-button: rgba(80, 80, 120, 0.6);
+            --color-button-hover: rgba(100, 100, 150, 0.8);
+            --color-tooltip-bg: rgba(20, 20, 40, 0.95);
+            --color-context-menu-bg: rgba(15, 15, 35, 0.98);
+            --color-success: #4caf50;
+            
+            /* View-specific colors */
+            --color-view-table: #3182ce;
+            --color-view-nebula: #805ad5;
+            --color-view-narrative: #e53e3e;
+            
+            /* Spacing */
+            --cell-padding: 12px;
+            --cell-border-radius: 4px;
+            --table-spacing: 20px;
+            
+            /* Animation */
+            --transition-speed: 0.2s;
+            --transition-long: 0.5s;
+        }
+        
+        /* 🌿 Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        /* 🌳 App Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+        
+        /* 🪴 Header Area */
+        .header {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            min-width: 180px;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            position: relative;
+            white-space: nowrap;
+        }
+        
+        .title::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background: var(--color-header);
+            bottom: -8px;
+            left: 0;
+        }
+        
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: flex-end;
+            min-width: 180px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button {
+            background-color: var(--color-button);
+            border: none;
+            color: var(--color-text);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .button:hover {
+            background-color: var(--color-button-hover);
+        }
+        
+        .button:active {
+            transform: translateY(1px);
+        }
+        
+        .button-icon {
+            font-size: 1rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        /* 🌳 View Mode Selector */
+        .view-selector {
+            display: flex;
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 6px;
+            padding: 4px;
+            position: relative;
+        }
+        
+        .view-option {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            z-index: 1;
+            transition: color var(--transition-speed);
+        }
+        
+        .view-indicator {
+            position: absolute;
+            height: calc(100% - 8px);
+            top: 4px;
+            left: 4px;
+            border-radius: 4px;
+            transition: left var(--transition-speed), width var(--transition-speed), background-color var(--transition-speed);
+            z-index: 0;
+        }
+        
+        .view-indicator.table {
+            background-color: var(--color-view-table);
+        }
+        
+        .view-indicator.nebula {
+            background-color: var(--color-view-nebula);
+        }
+        
+        .view-indicator.narrative {
+            background-color: var(--color-view-narrative);
+        }
+        
+        /* 🌸 Search and Pagination in Header */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 15px;
+        }
+        
+        .search-input {
+            background-color: rgba(30, 30, 50, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            color: var(--color-text);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            width: 200px;
+            transition: border-color var(--transition-speed), 
+                        background-color var(--transition-speed),
+                        width var(--transition-speed);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--color-header);
+            background-color: rgba(40, 40, 60, 0.8);
+            width: 250px;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px;
+            height: 36px;
+            background-color: rgba(20, 20, 40, 0.5);
+            border-radius: 4px;
+        }
+        
+        .pagination-button {
+            background: none;
+            border: none;
+            color: var(--color-text);
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            font-size: 0.9rem;
+        }
+        
+        .pagination-button:hover {
+            background-color: rgba(80, 80, 120, 0.7);
+        }
+        
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .page-info {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            white-space: nowrap;
+        }
+        
+        /* 🌳 Workspace Area */
+        .workspace {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: rgba(10, 10, 30, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background-color var(--transition-long);
+        }
+        
+        /* View-specific workspace backgrounds */
+        .workspace.table-view {
+            background-color: rgba(10, 20, 40, 0.3);
+        }
+        
+        .workspace.nebula-view {
+            background-color: rgba(30, 10, 40, 0.3);
+        }
+        
+        .workspace.narrative-view {
+            background-color: rgba(40, 10, 20, 0.3);
+        }
+        
+        /* 🌱 Table Container */
+        .table-container {
+            position: absolute;
+            top: var(--table-spacing);
+            left: var(--table-spacing);
+            right: var(--table-spacing);
+            bottom: var(--table-spacing);
+            overflow: auto;
+        }
+        
+        /* 🌿 Data Table Structure */
+        .data-table {
+            border-collapse: separate;
+            border-spacing: 2px;
+            background-color: var(--color-table-bg);
+            width: max-content;
+            min-width: 100%;
+        }
+        
+        .data-table th {
+            background-color: rgba(60, 60, 100, 0.7);
+            color: var(--color-header);
+            font-weight: 600;
+            text-align: left;
+            padding: var(--cell-padding);
+            border-radius: var(--cell-border-radius);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+        
+        .data-table th:hover {
+            background-color: rgba(70, 70, 120, 0.8);
+        }
+        
+        .data-table th.sorted-asc::after {
+            content: ' ↑';
+            opacity: 0.7;
+        }
+        
+        .data-table th.sorted-desc::after {
+            content: ' ↓';
+            opacity: 0.7;
+        }
+        
+        /* 🧠 Data Cell - The Key Component */
+        .data-cell {
+            background-color: var(--color-cell-bg);
+            padding: var(--cell-padding);
+            border-radius: var(--cell-border-radius);
+            cursor: move; /* Indicate draggable */
+            transition: transform var(--transition-speed), 
+                        background-color var(--transition-speed),
+                        box-shadow var(--transition-speed),
+                        opacity var(--transition-long);
+            
+            /* Critical CSS for draggability */
+            position: relative;
+            user-select: none; /* Prevent text selection during drag */
+            touch-action: none; /* Prevent scrolling on touch devices */
+            
+            /* Make it draggable with native HTML5 */
+            -webkit-user-drag: element;
+        }
+        
+        .data-cell:hover {
+            background-color: var(--color-cell-hover);
+            z-index: 100;
+        }
+        
+        /* Focused cell style */
+        .data-cell.focused {
+            outline: 2px solid var(--color-header);
+            background-color: var(--color-cell-hover);
+        }
+        
+        /* 🌿 Free-floating cell (dragged out) */
+        .data-cell.floating {
+            position: absolute;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            min-width: 150px;
+        }
+        
+        /* Transition effects for cells in different views */
+        .nebula-view .data-cell:not(.selected):not(.floating) {
+            opacity: 0.2;
+            filter: grayscale(80%);
+            pointer-events: none;
+        }
+        
+        .narrative-view .data-cell:not(.in-narrative) {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Narrative view positioning animation */
+        .narrative-view .data-cell.in-narrative {
+            position: absolute;
+            transition: all var(--transition-long) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Floating cell animations */
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .data-cell.floating.pop-in {
+            animation: pop-in 0.3s ease-out forwards;
+        }
+        
+        /* 🪴 Placeholder for empty cell spot */
+        .cell-placeholder {
+            background-color: rgba(60, 60, 100, 0.3);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: var(--cell-border-radius);
+            min-height: 20px;
+        }
+        
+        /* 🧠 Selected cells (shift+click) */
+        .data-cell.selected {
+            border: 2px solid var(--color-line);
+            box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
+        }
+        
+        /* Context highlight for original rows when in context mode */
+        tr.context-highlight {
+            background-color: rgba(60, 90, 120, 0.3);
+        }
+        
+        /* Styles for row highlighting */
+        tr.row-highlight {
+            background-color: rgba(60, 60, 100, 0.2);
+        }
+        
+        /* 🧠 Narrative connections */
+        .narrative-line {
+            position: absolute;
+            height: 2px;
+            background-color: var(--color-line);
+            transform-origin: left center;
+            z-index: 50;
+            pointer-events: none; /* Allow clicking through the line */
+            opacity: 0;
+            transition: opacity var(--transition-long);
+        }
+        
+        /* Show narrative lines in nebula/narrative views */
+        .nebula-view .narrative-line,
+        .narrative-view .narrative-line {
+            opacity: 1;
+        }
+        
+        /* 🌿 Status Message */
+        .status-message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(10, 10, 30, 0.9);
+            padding: 10px 20px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            pointer-events: none;
+            z-index: 2000;
+        }
+        
+        .status-message.active {
+            opacity: 1;
+        }
+        
+        /* 🌳 Instructions */
+        .instructions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(40, 40, 60, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: opacity var(--transition-speed);
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: var(--color-header);
+            padding-right: 20px; /* Space for close button */
+        }
+        
+        .instructions ul {
+            list-style-position: inside;
+            margin-top: 10px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: var(--color-muted);
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--color-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity var(--transition-speed);
+        }
+        
+        .close-button:hover {
+            opacity: 1;
+        }
+        
+        .key {
+            display: inline-block;
+            background-color: rgba(80, 80, 120, 0.6);
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin: 0 3px;
+        }
+        
+        /* 🪴 Loading Indicator */
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 10, 30, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed);
+        }
+        
+        .loading.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--color-header);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 🧠 Cell tooltip */
+        .cell-tooltip {
+            position: absolute;
+            background-color: var(--color-tooltip-bg);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            max-width: 250px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            z-index: 1200;
+        }
+        
+        .cell-tooltip.active {
+            opacity: 1;
+        }
+        
+        /* 🌳 Context Button */
+        .context-button {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000;
+            transition: opacity var(--transition-long), transform var(--transition-speed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background-color: var(--color-success);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+        
+        .context-button.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .context-button:hover {
+            background-color: #45a049;
+        }
+        
+        .context-button:active {
+            transform: translateY(2px);
+        }
+        
+        /* Context mode indicator */
+        .context-mode-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--color-success);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity var(--transition-speed), transform var(--transition-speed);
+            pointer-events: none;
+        }
+        
+        .context-mode-indicator.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .context-mode-indicator button {
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            border-radius: 3px;
+            padding: 3px 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+        
+        .context-mode-indicator button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* 🦄 Special CSS for view transitions */
+        .view-transition {
+            transition: transform var(--transition-long) cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity var(--transition-long) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Keyboard help styles */
+        .keyboard-help {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            background-color: rgba(20, 20, 40, 0.8);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            z-index: 100;
+            display: none;
+        }
+        
+        .keyboard-help.active {
+            display: block;
+        }
+        
+        .keyboard-help h4 {
+            color: var(--color-header);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .shortcut-key {
+            background-color: rgba(60, 60, 100, 0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            margin-left: 10px;
+        }
+        
+        /* Trash bin for removal */
+        .trash-bin {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(30, 30, 50, 0.7);
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+            z-index: 100;
+        }
+        
+        .trash-bin:hover {
+            background-color: rgba(80, 80, 120, 0.8);
+        }
+        
+        .trash-bin.active {
+            background-color: rgba(255, 107, 107, 0.4);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="title">DataBraid</h1>
+            </div>
+            
+            <div class="header-center">
+                <!-- View Selector -->
+                <div class="view-selector">
+                    <div class="view-indicator table"></div>
+                    <div class="view-option" data-view="table">
+                        <span class="view-icon">📊</span>
+                        <span>Table</span>
+                    </div>
+                    <div class="view-option" data-view="nebula">
+                        <span class="view-icon">✨</span>
+                        <span>Nebula</span>
+                    </div>
+                    <div class="view-option" data-view="narrative">
+                        <span class="view-icon">📝</span>
+                        <span>Narrative</span>
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div class="pagination-controls">
+                    <button class="pagination-button" id="prev-page">◀</button>
+                    <div class="page-info" id="page-info">1-50 of 100</div>
+                    <button class="pagination-button" id="next-page">▶</button>
+                    <button class="pagination-button" id="load-more">+</button>
+                </div>
+                
+                <!-- Search -->
+                <div class="search-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="Search data...">
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="controls">
+                    <input type="file" id="csv-upload" class="file-input" accept=".csv">
+                    <label for="csv-upload" class="button">
+                        <span class="button-icon">📄</span>
+                        <span>Upload CSV</span>
+                    </label>
+                    <button id="reset-button" class="button">
+                        <span class="button-icon">🔄</span>
+                        <span>Reset</span>
+                    </button>
+                    <button id="toggle-keyboard-help" class="button">
+                        <span class="button-icon">⌨️</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <div class="workspace table-view" id="workspace">
+            <div class="table-container" id="table-container">
+                <table class="data-table" id="data-table">
+                    <!-- Table content will be generated dynamically -->
+                </table>
+            </div>
+            
+            <!-- Context Mode Indicator -->
+            <div class="context-mode-indicator" id="context-indicator">
+                <span>Showing original context</span>
+                <button id="exit-context-mode">Exit</button>
+            </div>
+            
+            <!-- Back in Context Button -->
+            <button class="context-button" id="context-button">
+                <span class="button-icon">🔍</span>
+                <span>Back in Context</span>
+            </button>
+            
+            <!-- Cell tooltip -->
+            <div class="cell-tooltip" id="cell-tooltip"></div>
+            
+            <!-- Trash bin for removal -->
+            <div class="trash-bin" id="trash-bin">🗑️</div>
+        </div>
+        
+        <div class="instructions" id="instructions">
+            <button class="close-button" id="close-instructions">×</button>
+            <h3>DataBraid: Multi-View Exploration</h3>
+            <p>Navigate between different views of your data with seamless transitions.</p>
+            <ul>
+                <li><strong>Table View:</strong> Traditional CSV view. Drag cells out or select with Shift+Click.</li>
+                <li><strong>Nebula View:</strong> Focus on selected cells while keeping others visible but dimmed.</li>
+                <li><strong>Narrative View:</strong> See only your selected narrative cells in sequence.</li>
+                <li>Press <span class="key">Delete</span> to remove a selected cell</li>
+                <li>Press <span class="key">?</span> to view keyboard shortcuts</li>
+            </ul>
+        </div>
+        
+        <div class="keyboard-help" id="keyboard-help">
+            <h4>Keyboard Shortcuts</h4>
+            <div class="shortcut-row">
+                <span>Reset Layout</span>
+                <span class="shortcut-key">R</span>
+            </div>
+            <div class="shortcut-row">
+                <span>Clear Narrative</span>
+                <span class="shortcut-key">C</span>
+            </div>
+            <div class="shortcut-row">
+                <span>Delete Cell</span>
+                <span class="shortcut-key">Delete</span>
+            </div>
+            <div class="shortcut-row">
+                <span>Search</span>
+                <span class="shortcut-key">Ctrl+F</span>
+            </div>
+            <div class="shortcut-row">
+                <span>Toggle Views</span>
+                <span class="shortcut-key">1/2/3</span>
+            </div>
+        </div>
+        
+        <div class="status-message" id="status-message">Data loaded successfully!</div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 🧠 Main Application Object - Structured as a knowledge knot
+        const DataBraid = {
+            // 🌱 State management - Core data and UI state
+            state: {
+                data: null,              // The full CSV data
+                displayData: null,       // Currently displayed subset
+                columns: [],             // Column names
+                draggedElement: null,    // Currently dragged element
+                originalPositions: {},   // Original position of each cell
+                selectedCells: [],       // Cells selected for narrative
+                narrativeLines: [],      // Lines connecting narrative cells
+                isShiftPressed: false,   // Whether shift key is pressed
+                isDrawingNarrative: false, // Whether we're drawing a narrative
+                focusedCell: null,       // Currently focused cell
+                hidden: {                // Hidden rows tracking
+                    rows: new Set(),     // Set of hidden row indices
+                    cells: []            // References to hidden cells
+                },
+                pagination: {            // Virtual scrolling state
+                    rowsPerPage: 50,     // Number of rows to show per page
+                    currentPage: 0,      // Current page index (0-based)
+                    totalPages: 0,       // Total number of pages
+                    totalRows: 0,        // Total number of rows in dataset
+                    loadedRows: 0        // Number of rows currently loaded
+                },
+                sorting: {               // Sorting state
+                    column: null,        // Currently sorted column
+                    direction: 'asc'     // Sort direction: 'asc' or 'desc'
+                },
+                search: {                // Search state
+                    query: '',           // Current search query
+                    results: []          // Matching row indices
+                },
+                view: {                  // View state
+                    current: 'table',    // Current view: 'table', 'nebula', 'narrative'
+                    contextMode: false   // Whether we're in context mode
+                }
+            },
+            
+            // 🌿 DOM Element Cache - Centralized access
+            dom: {
+                table: null,
+                tableContainer: null,
+                workspace: null,
+                statusMessage: null,
+                loading: null,
+                csvUpload: null,
+                resetButton: null,
+                contextButton: null,
+                contextIndicator: null,
+                exitContextMode: null,
+                instructions: null,
+                closeInstructions: null,
+                cellTooltip: null,
+                keyboardHelp: null,
+                toggleKeyboardHelp: null,
+                pagination: {
+                    controls: null,
+                    prevPage: null,
+                    nextPage: null,
+                    loadMore: null,
+                    pageInfo: null
+                },
+                search: {
+                    input: null
+                },
+                viewSelector: {
+                    container: null,
+                    options: null,
+                    indicator: null
+                },
+                trashBin: null
+            },
+            
+            // 🌳 Initialization - Setup and event binding
+            init() {
+                // Cache DOM elements
+                this.dom.table = document.getElementById('data-table');
+                this.dom.tableContainer = document.getElementById('table-container');
+                this.dom.workspace = document.getElementById('workspace');
+                this.dom.statusMessage = document.getElementById('status-message');
+                this.dom.loading = document.getElementById('loading');
+                this.dom.csvUpload = document.getElementById('csv-upload');
+                this.dom.resetButton = document.getElementById('reset-button');
+                this.dom.contextButton = document.getElementById('context-button');
+                this.dom.contextIndicator = document.getElementById('context-indicator');
+                this.dom.exitContextMode = document.getElementById('exit-context-mode');
+                this.dom.instructions = document.getElementById('instructions');
+                this.dom.closeInstructions = document.getElementById('close-instructions');
+                this.dom.cellTooltip = document.getElementById('cell-tooltip');
+                this.dom.keyboardHelp = document.getElementById('keyboard-help');
+                this.dom.toggleKeyboardHelp = document.getElementById('toggle-keyboard-help');
+                this.dom.trashBin = document.getElementById('trash-bin');
+                
+                // Pagination elements
+                this.dom.pagination.controls = document.querySelector('.pagination-controls');
+                this.dom.pagination.prevPage = document.getElementById('prev-page');
+                this.dom.pagination.nextPage = document.getElementById('next-page');
+                this.dom.pagination.loadMore = document.getElementById('load-more');
+                this.dom.pagination.pageInfo = document.getElementById('page-info');
+                
+                // Search element
+                this.dom.search.input = document.getElementById('search-input');
+                
+                // View selector elements
+                this.dom.viewSelector.container = document.querySelector('.view-selector');
+                this.dom.viewSelector.options = document.querySelectorAll('.view-option');
+                this.dom.viewSelector.indicator = document.querySelector('.view-indicator');
+                
+                // Bind events
+                this.dom.csvUpload.addEventListener('change', this.handleFileUpload.bind(this));
+                this.dom.resetButton.addEventListener('click', this.resetLayout.bind(this));
+                this.dom.contextButton.addEventListener('click', this.showInContext.bind(this));
+                this.dom.exitContextMode.addEventListener('click', this.exitContextMode.bind(this));
+                this.dom.closeInstructions.addEventListener('click', this.hideInstructions.bind(this));
+                this.dom.pagination.prevPage.addEventListener('click', this.previousPage.bind(this));
+                this.dom.pagination.nextPage.addEventListener('click', this.nextPage.bind(this));
+                this.dom.pagination.loadMore.addEventListener('click', this.loadMoreRows.bind(this));
+                this.dom.search.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') this.performSearch();
+                });
+                this.dom.toggleKeyboardHelp.addEventListener('click', this.toggleKeyboardHelp.bind(this));
+                this.dom.trashBin.addEventListener('dragover', this.handleTrashDragOver.bind(this));
+                this.dom.trashBin.addEventListener('drop', this.handleTrashDrop.bind(this));
+                this.dom.trashBin.addEventListener('dragleave', this.handleTrashDragLeave.bind(this));
+                
+                // Bind view selector events
+                this.dom.viewSelector.options.forEach(option => {
+                    option.addEventListener('click', () => {
+                        const view = option.dataset.view;
+                        this.changeView(view);
+                    });
+                });
+                
+                // Set up keyboard listeners
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+                document.addEventListener('keyup', this.handleKeyUp.bind(this));
+                
+                // Load sample data if no CSV is uploaded in 2 seconds
+                setTimeout(() => {
+                    if (!this.state.data) {
+                        this.loadSampleData();
+                    }
+                }, 2000);
+            },
+            
+            // 🌱 File Handling - CSV parsing
+            async handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                this.showLoading();
+                
+                try {
+                    const content = await this.readFile(file);
+                    this.parseCSV(content);
+                    this.showStatus(`CSV loaded: ${file.name}`);
+                } catch (error) {
+                    console.error('Error loading CSV:', error);
+                    this.showStatus('Error loading CSV file');
+                } finally {
+                    this.hideLoading();
+                }
+            },
+            
+            readFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject(new Error('Failed to read file'));
+                    reader.readAsText(file);
+                });
+            },
+            
+            // 🧠 CSV Parser - Robust parsing with quotation support
+            parseCSV(text) {
+                try {
+                    // Parse the CSV text into rows and handle quotes
+                    const rows = this.parseCSVRows(text);
+                    
+                    if (rows.length === 0) {
+                        throw new Error('No data in CSV');
+                    }
+                    
+                    // Extract headers (first row)
+                    const headers = rows[0];
+                    
+                    // Convert to array of objects
+                    const data = [];
+                    for (let i = 1; i < rows.length; i++) {
+                        // Skip empty rows
+                        if (rows[i].length === 0 || (rows[i].length === 1 && rows[i][0] === '')) {
+                            continue;
+                        }
+                        
+                        const rowObj = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            rowObj[headers[j]] = j < rows[i].length ? rows[i][j] : '';
+                        }
+                        data.push(rowObj);
+                    }
+                    
+                    // Update state
+                    this.state.data = data;
+                    this.state.columns = headers;
+                    
+                    // Setup pagination
+                    this.setupPagination();
+                    
+                    // Render the first page
+                    this.renderTable();
+                } catch (error) {
+                    console.error('CSV Parse Error:', error);
+                    this.showStatus('Invalid CSV format: ' + error.message);
+                }
+            },
+            
+            // Parse CSV text into rows, handling quoted fields correctly
+            parseCSVRows(text) {
+                const result = [];
+                let row = [];
+                let inQuote = false;
+                let currentField = '';
+                
+                // Normalize line endings
+                text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                
+                for (let i = 0; i < text.length; i++) {
+                    const char = text[i];
+                    const nextChar = i < text.length - 1 ? text[i + 1] : '';
+                    
+                    if (char === '"') {
+                        if (inQuote && nextChar === '"') {
+                            // Escaped quote (double quotes)
+                            currentField += '"';
+                            i++; // Skip the next quote
+                        } else {
+                            // Toggle quote state
+                            inQuote = !inQuote;
+                        }
+                    } else if (char === ',' && !inQuote) {
+                        // Field separator - end of field
+                        row.push(currentField.trim());
+                        currentField = '';
+                    } else if (char === '\n' && !inQuote) {
+                        // End of row
+                        row.push(currentField.trim());
+                        result.push(row);
+                        row = [];
+                        currentField = '';
+                    } else {
+                        // Regular character - add to current field
+                        currentField += char;
+                    }
+                }
+                
+                // Handle last row if not empty
+                if (currentField || row.length > 0) {
+                    row.push(currentField.trim());
+                    result.push(row);
+                }
+                
+                if (inQuote) {
+                    console.warn('Warning: Unmatched quote in CSV');
+                }
+                
+                return result;
+            },
+            
+            // 🌿 Sample Data - For initial testing
+            loadSampleData() {
+                // Create sample data with more rows than we'll display at once
+                const sampleData = [
+                    { Name: "Alice", Age: "28", Department: "Design", Location: "New York", Salary: "75000", Start_Date: "2022-03-15" },
+                    { Name: "Bob", Age: "34", Department: "Engineering", Location: "San Francisco", Salary: "95000", Start_Date: "2021-06-01" },
+                    { Name: "Charlie", Age: "45", Department: "Education", Location: "Chicago", Salary: "65000", Start_Date: "2020-09-12" },
+                    { Name: "Diana", Age: "31", Department: "Architecture", Location: "Seattle", Salary: "82000", Start_Date: "2023-01-10" },
+                    { Name: "Evan", Age: "27", Department: "Engineering", Location: "Austin", Salary: "78000", Start_Date: "2022-11-28" },
+                    { Name: "Fiona", Age: "29", Department: "Marketing", Location: "Boston", Salary: "67000", Start_Date: "2023-04-05" },
+                    { Name: "George", Age: "38", Department: "Finance", Location: "Miami", Salary: "90000", Start_Date: "2021-08-15" },
+                    { Name: "Hannah", Age: "26", Department: "Design", Location: "Portland", Salary: "72000", Start_Date: "2022-07-01" },
+                    { Name: "Ian", Age: "41", Department: "Operations", Location: "Denver", Salary: "85000", Start_Date: "2020-03-20" },
+                    { Name: "Julia", Age: "33", Department: "Engineering", Location: "San Diego", Salary: "92000", Start_Date: "2021-11-15" },
+                    { Name: "Kevin", Age: "30", Department: "Marketing", Location: "Chicago", Salary: "71000", Start_Date: "2022-02-28" },
+                    { Name: "Lisa", Age: "36", Department: "Finance", Location: "New York", Salary: "88000", Start_Date: "2021-05-10" },
+                    { Name: "Michael", Age: "42", Department: "Education", Location: "Washington DC", Salary: "69000", Start_Date: "2020-08-01" },
+                    { Name: "Nina", Age: "29", Department: "Design", Location: "Los Angeles", Salary: "76000", Start_Date: "2022-12-05" },
+                    { Name: "Oscar", Age: "44", Department: "Operations", Location: "Atlanta", Salary: "82000", Start_Date: "2019-10-15" },
+                    { Name: "Patricia", Age: "31", Department: "Engineering", Location: "Boston", Salary: "94000", Start_Date: "2021-09-20" },
+                    { Name: "Quincy", Age: "27", Department: "Marketing", Location: "Seattle", Salary: "70000", Start_Date: "2023-02-10" },
+                    { Name: "Robert", Age: "39", Department: "Finance", Location: "Chicago", Salary: "91000", Start_Date: "2020-11-12" },
+                    { Name: "Samantha", Age: "32", Department: "Design", Location: "San Francisco", Salary: "79000", Start_Date: "2022-04-15" },
+                    { Name: "Tyler", Age: "28", Department: "Engineering", Location: "Austin", Salary: "87000", Start_Date: "2021-07-01" }
+                ];
+                
+                // Create additional rows for virtual scrolling demonstration
+                const extraRows = [];
+                for (let i = 0; i < 30; i++) {
+                    const baseRow = sampleData[i % sampleData.length];
+                    const copyRow = { ...baseRow };
+                    copyRow.Name = `${baseRow.Name}-${i+1}`;
+                    // Slightly modify other values
+                    copyRow.Age = (parseInt(baseRow.Age) + (i % 5)).toString();
+                    copyRow.Salary = (parseInt(baseRow.Salary) + i * 1000).toString();
+                    extraRows.push(copyRow);
+                }
+                
+                this.state.data = [...sampleData, ...extraRows];
+                this.state.columns = Object.keys(sampleData[0]);
+                
+                // Setup pagination
+                this.setupPagination();
+                
+                // Render the first page
+                this.renderTable();
+                this.showStatus('Sample data loaded');
+            },
+            
+            // 🧠 Pagination System - Virtual scrolling
+            setupPagination() {
+                const totalRows = this.state.data.length;
+                const rowsPerPage = this.state.pagination.rowsPerPage;
+                
+                this.state.pagination.totalRows = totalRows;
+                this.state.pagination.totalPages = Math.ceil(totalRows / rowsPerPage);
+                this.state.pagination.currentPage = 0;
+                this.state.pagination.loadedRows = Math.min(rowsPerPage, totalRows);
+                
+                // Update pagination controls
+                this.updatePaginationControls();
+            },
+            
+            updatePaginationControls() {
+                const pagination = this.state.pagination;
+                const startRow = pagination.currentPage * pagination.rowsPerPage + 1;
+                let endRow = startRow + pagination.rowsPerPage - 1;
+                
+                // Adjust if last page has fewer rows
+                if (endRow > pagination.totalRows) {
+                    endRow = pagination.totalRows;
+                }
+                
+                // Update the page info display
+                this.dom.pagination.pageInfo.textContent = `${startRow}-${endRow} of ${pagination.totalRows}`;
+                
+                // Enable/disable prev/next buttons
+                this.dom.pagination.prevPage.disabled = pagination.currentPage === 0;
+                this.dom.pagination.nextPage.disabled = pagination.currentPage === pagination.totalPages - 1;
+                
+                // Show/hide load more button based on if all rows are loaded
+                this.dom.pagination.loadMore.style.display = 
+                    pagination.loadedRows < pagination.totalRows ? 'block' : 'none';
+            },
+            
+            previousPage() {
+                if (this.state.pagination.currentPage > 0) {
+                    this.state.pagination.currentPage--;
+                    this.renderTable();
+                    this.updatePaginationControls();
+                }
+            },
+            
+            nextPage() {
+                if (this.state.pagination.currentPage < this.state.pagination.totalPages - 1) {
+                    this.state.pagination.currentPage++;
+                    this.renderTable();
+                    this.updatePaginationControls();
+                }
+            },
+            
+            loadMoreRows() {
+                // Increase the number of loaded rows by one page
+                const pagination = this.state.pagination;
+                const newLoadedRows = Math.min(
+                    pagination.loadedRows + pagination.rowsPerPage,
+                    pagination.totalRows
+                );
+                
+                // Update state
+                pagination.loadedRows = newLoadedRows;
+                
+                // Recalculate total pages based on loaded rows
+                pagination.totalPages = Math.ceil(newLoadedRows / pagination.rowsPerPage);
+                
+                // Update pagination controls
+                this.updatePaginationControls();
+                
+                // Show status message
+                this.showStatus(`Loaded ${newLoadedRows} of ${pagination.totalRows} rows`);
+            },
+            
+            // 🌳 Table Rendering - Build the HTML table
+            renderTable() {
+                const data = this.state.data;
+                if (!data || data.length === 0) return;
+                
+                // Clear existing table
+                this.dom.table.innerHTML = '';
+                
+                // Create header row
+                const headerRow = document.createElement('tr');
+                this.state.columns.forEach(column => {
+                    const th = document.createElement('th');
+                    th.textContent = column;
+                    
+                    // Add sorting indicator if this column is sorted
+                    if (this.state.sorting.column === column) {
+                        th.classList.add(
+                            this.state.sorting.direction === 'asc' ? 'sorted-asc' : 'sorted-desc'
+                        );
+                    }
+                    
+                    // Add click handler for sorting
+                    th.addEventListener('click', () => this.sortBy(column));
+                    
+                    headerRow.appendChild(th);
+                });
+                
+                const thead = document.createElement('thead');
+                thead.appendChild(headerRow);
+                this.dom.table.appendChild(thead);
+                
+                // Create data rows (only for current page)
+                const tbody = document.createElement('tbody');
+                
+                // Calculate row range for current page
+                const pagination = this.state.pagination;
+                const startRow = pagination.currentPage * pagination.rowsPerPage;
+                const endRow = Math.min(startRow + pagination.rowsPerPage, pagination.loadedRows);
+                
+                // Get visible data (excluding hidden rows)
+                const visibleData = [];
+                for (let i = 0; i < this.state.data.length; i++) {
+                    if (!this.state.hidden.rows.has(i)) {
+                        visibleData.push({
+                            index: i,
+                            data: this.state.data[i]
+                        });
+                    }
+                }
+                
+                // Apply search filter if there's a search query
+                let displayData = visibleData;
+                if (this.state.search.query) {
+                    displayData = visibleData.filter(item => 
+                        this.state.search.results.includes(item.index)
+                    );
+                }
+                
+                // For context mode, filter to only show rows containing narrative cells
+                if (this.state.view.contextMode) {
+                    // Get list of row indices from narrative cells
+                    const narrativeRowIndices = new Set(
+                        this.state.selectedCells.map(cell => 
+                            parseInt(cell.dataset.row)
+                        )
+                    );
+                    
+                    displayData = displayData.filter(item => 
+                        narrativeRowIndices.has(item.index)
+                    );
+                }
+                
+                // Slice for current page
+                const pageData = displayData.slice(startRow, endRow);
+                
+                // Store displayed data for future reference
+                this.state.displayData = pageData;
+                
+                // Create table rows
+                pageData.forEach((row, displayIndex) => {
+                    const tr = document.createElement('tr');
+                    const rowIndex = row.index; // Original index in dataset
+                    
+                    // Highlight current page rows
+                    if (displayIndex % 2 === 0) {
+                        tr.classList.add('row-highlight');
+                    }
+                    
+                    // Add context highlight for rows in context mode
+                    if (this.state.view.contextMode) {
+                        tr.classList.add('context-highlight');
+                    }
+                    
+                    this.state.columns.forEach((column, colIndex) => {
+                        const td = document.createElement('td');
+                        const cellDiv = document.createElement('div');
+                        
+                        // Set attributes for cell
+                        cellDiv.className = 'data-cell';
+                        cellDiv.textContent = row.data[column] || '';
+                        cellDiv.setAttribute('draggable', 'true');
+                        cellDiv.dataset.row = rowIndex;
+                        cellDiv.dataset.col = colIndex;
+                        cellDiv.dataset.value = row.data[column] || '';
+                        cellDiv.dataset.column = column;
+                        
+                        // Set up HTML5 drag and drop
+                        cellDiv.addEventListener('dragstart', this.handleDragStart.bind(this));
+                        cellDiv.addEventListener('dragend', this.handleDragEnd.bind(this));
+                        
+                        // Add click for narrative creation
+                        cellDiv.addEventListener('click', this.handleCellClick.bind(this));
+                        
+                        // Add double click to focus cell
+                        cellDiv.addEventListener('dblclick', this.handleCellDoubleClick.bind(this));
+                        
+                        // Add hover for tooltip
+                        cellDiv.addEventListener('mouseenter', this.handleCellHover.bind(this));
+                        cellDiv.addEventListener('mouseleave', this.handleCellLeave.bind(this));
+                        
+                        // Add a unique ID
+                        const cellId = `cell-${rowIndex}-${colIndex}`;
+                        cellDiv.id = cellId;
+                        
+                        td.appendChild(cellDiv);
+                        tr.appendChild(td);
+                    });
+                    
+                    tbody.appendChild(tr);
+                });
+                
+                this.dom.table.appendChild(tbody);
+                
+                // Setup workspace for drag events
+                this.setupWorkspaceDragEvents();
+                
+                // Store initial positions after rendering
+                this.storeOriginalPositions();
+                
+                // Restore selection state for cells
+                this.restoreSelectionState();
+                
+                // Update visibility of context button based on narrative selection
+                this.updateContextButtonVisibility();
+            },
+            
+            // 🌱 Position Management - Track where cells belong
+            storeOriginalPositions() {
+                // Store the original position of each cell
+                const cells = document.querySelectorAll('.data-cell');
+                cells.forEach(cell => {
+                    const rect = cell.getBoundingClientRect();
+                    const tableContainerRect = this.dom.tableContainer.getBoundingClientRect();
+                    
+                    this.state.originalPositions[cell.id] = {
+                        left: rect.left - tableContainerRect.left + this.dom.tableContainer.scrollLeft,
+                        top: rect.top - tableContainerRect.top + this.dom.tableContainer.scrollTop,
+                        width: rect.width,
+                        height: rect.height,
+                        inTable: true
+                    };
+                });
+            },
+            
+            // 🌿 Drag and Drop Handlers - Core interaction
+            setupWorkspaceDragEvents() {
+                // Allow dropping anywhere in workspace
+                this.dom.tableContainer.addEventListener('dragover', (e) => {
+                    e.preventDefault(); // Allow dropping
+                });
+                
+                this.dom.tableContainer.addEventListener('drop', this.handleDrop.bind(this));
+            },
+            
+            handleDragStart(e) {
+                const cell = e.target;
+                
+                // Set this cell as the currently dragged element
+                this.state.draggedElement = cell;
+                
+                // Add styling to show it's being dragged
+                setTimeout(() => {
+                    cell.style.opacity = '0.4';
+                }, 0);
+                
+                // Create and show a placeholder in the original spot
+                if (cell.parentNode.tagName === 'TD') {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'cell-placeholder';
+                    placeholder.dataset.for = cell.id;
+                    cell.parentNode.appendChild(placeholder);
+                }
+                
+                // Set drag data
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', cell.id);
+                
+                // Show trash bin when dragging starts
+                this.dom.trashBin.style.display = 'flex';
+            },
+            
+            handleDrop(e) {
+                e.preventDefault();
+                
+                // Get the dragged cell
+                const cellId = e.dataTransfer.getData('text/plain');
+                const cell = document.getElementById(cellId);
+                
+                if (!cell) return;
+                
+                // Calculate position relative to table container
+                const containerRect = this.dom.tableContainer.getBoundingClientRect();
+                const x = e.clientX - containerRect.left + this.dom.tableContainer.scrollLeft;
+                const y = e.clientY - containerRect.top + this.dom.tableContainer.scrollTop;
+                
+                // Move the cell to the drop position
+                this.moveCell(cell, x, y);
+                
+                // Remove placeholder
+                const placeholder = document.querySelector(`.cell-placeholder[data-for="${cellId}"]`);
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                
+                // Hide trash bin when drag ends
+                this.dom.trashBin.style.display = 'none';
+            },
+            
+            handleDragEnd(e) {
+                e.preventDefault();
+                
+                // Reset opacity
+                if (this.state.draggedElement) {
+                    this.state.draggedElement.style.opacity = '1';
+                    this.state.draggedElement = null;
+                }
+                
+                // Hide trash bin
+                this.dom.trashBin.style.display = 'none';
+            },
+            
+            moveCell(cell, x, y) {
+                // Remove from table if it's still there
+                if (cell.parentNode && cell.parentNode.tagName === 'TD') {
+                    // Convert to floating cell
+                    this.dom.tableContainer.appendChild(cell);
+                    cell.classList.add('floating');
+                    cell.classList.add('pop-in'); // Add animation
+                    
+                    // Remove animation after it completes
+                    setTimeout(() => {
+                        cell.classList.remove('pop-in');
+                    }, 300);
+                    
+                    // Save that it's now outside the table
+                    this.state.originalPositions[cell.id].inTable = false;
+                }
+                
+                // Position absolutely 
+                cell.style.left = `${x}px`;
+                cell.style.top = `${y}px`;
+                
+                // Redraw narrative lines if this is a selected cell
+                if (cell.classList.contains('selected')) {
+                    this.drawNarrativeLines();
+                }
+                
+                // If in narrative view, update narrative layout
+                if (this.state.view.current === 'narrative') {
+                    this.layoutNarrativeCells();
+                }
+            },
+            
+            // 🧠 Cell Interaction Handlers
+            handleTrashDragOver(e) {
+                e.preventDefault();
+                this.dom.trashBin.classList.add('active');
+            },
+            
+            handleTrashDragLeave(e) {
+                this.dom.trashBin.classList.remove('active');
+            },
+            
+            handleTrashDrop(e) {
+                e.preventDefault();
+                this.dom.trashBin.classList.remove('active');
+                
+                // Get the dragged cell
+                const cellId = e.dataTransfer.getData('text/plain');
+                const cell = document.getElementById(cellId);
+                
+                if (cell) {
+                    this.deleteCell(cell);
+                }
+            },
+            
+            deleteCell(cell) {
+                // Check if cell is in narrative
+                if (cell.classList.contains('selected')) {
+                    // Remove from selected cells array
+                    this.state.selectedCells = this.state.selectedCells.filter(c => c !== cell);
+                    // Redraw narrative lines
+                    this.drawNarrativeLines();
+                    // Update context button visibility
+                    this.updateContextButtonVisibility();
+                }
+                
+                // Get row index
+                const rowIndex = parseInt(cell.dataset.row);
+                
+                // Note: We're removing the cell but not hiding the whole row
+                
+                // Remove cell from DOM
+                if (cell.parentNode) {
+                    if (cell.parentNode.tagName === 'TD') {
+                        // Remove placeholder if it exists
+                        const placeholder = cell.parentNode.querySelector('.cell-placeholder');
+                        if (placeholder) placeholder.remove();
+                    }
+                    cell.remove();
+                }
+                
+                // Show status
+                this.showStatus(`Cell removed`);
+            },
+            
+            handleCellClick(e) {
+                const cell = e.target;
+                
+                // Focus cell when clicked
+                this.focusCell(cell);
+                
+                // If shift is pressed, handle narrative selection
+                if (this.state.isShiftPressed) {
+                    e.preventDefault();
+                    
+                    // Toggle cell selection
+                    if (cell.classList.contains('selected')) {
+                        // Deselect cell
+                        cell.classList.remove('selected');
+                        this.state.selectedCells = this.state.selectedCells.filter(c => c !== cell);
+                    } else {
+                        // Select cell
+                        cell.classList.add('selected');
+                        this.state.selectedCells.push(cell);
+                        
+                        // Start narrative drawing if this is the first selected cell
+                        if (this.state.selectedCells.length === 1) {
+                            this.state.isDrawingNarrative = true;
+                        }
+                    }
+                    
+                    // Add the in-narrative class for view transitions
+                    cell.classList.toggle('in-narrative', cell.classList.contains('selected'));
+                    
+                    // Draw the narrative line for this selection
+                    this.drawNarrativeLines();
+                    
+                    // Update context button visibility
+                    this.updateContextButtonVisibility();
+                    
+                    // If in narrative view, update layout
+                    if (this.state.view.current === 'narrative') {
+                        this.layoutNarrativeCells();
+                    }
+                }
+            },
+            
+            handleCellDoubleClick(e) {
+                const cell = e.target;
+                
+                // If cell is floating, return it to table
+                if (cell.classList.contains('floating')) {
+                    this.returnCellToTable(cell);
+                }
+            },
+            
+            returnCellToTable(cell) {
+                if (!cell.classList.contains('floating')) return;
+                
+                // Get original position data
+                const rowIndex = parseInt(cell.dataset.row);
+                const colIndex = parseInt(cell.dataset.col);
+                
+                // Check if the row is currently visible
+                const pagination = this.state.pagination;
+                const startRow = pagination.currentPage * pagination.rowsPerPage;
+                const endRow = Math.min(startRow + pagination.rowsPerPage, pagination.loadedRows);
+                
+                let rowElement = null;
+                
+                // Find the row in the current display
+                for (let i = 0; i < this.state.displayData.length; i++) {
+                    if (this.state.displayData[i].index === rowIndex) {
+                        rowElement = this.dom.table.rows[i + 1]; // +1 for header row
+                        break;
+                    }
+                }
+                
+                if (rowElement) {
+                    const td = rowElement.cells[colIndex];
+                    
+                    if (td) {
+                        // Remove floating class
+                        cell.classList.remove('floating');
+                        
+                        // Remove any placeholder
+                        const placeholder = td.querySelector('.cell-placeholder');
+                        if (placeholder) {
+                            placeholder.remove();
+                        }
+                        
+                        // Reset position styles
+                        cell.style.left = '';
+                        cell.style.top = '';
+                        
+                        // Return to table
+                        td.appendChild(cell);
+                        
+                        // Update state
+                        this.state.originalPositions[cell.id].inTable = true;
+                        
+                        // Redraw narrative lines if this is a selected cell
+                        if (cell.classList.contains('selected')) {
+                            this.drawNarrativeLines();
+                        }
+                        
+                        this.showStatus('Cell returned to table');
+                        return;
+                    }
+                }
+                
+                // If we can't return it directly (row not visible), show message
+                this.showStatus('Navigate to page containing row to return cell');
+            },
+            
+            handleCellHover(e) {
+                const cell = e.target;
+                
+                // Only show tooltip for floating cells
+                if (!cell.classList.contains('floating')) return;
+                
+                const column = cell.dataset.column;
+                const value = cell.dataset.value;
+                const rowIndex = parseInt(cell.dataset.row) + 1; // 1-based for display
+                
+                // Create tooltip content
+                const tooltipHtml = `
+                    <div><strong>${column}</strong>: ${value}</div>
+                    <div>Row: ${rowIndex}</div>
+                `;
+                
+                // Position and show tooltip
+                const rect = cell.getBoundingClientRect();
+                const containerRect = this.dom.tableContainer.getBoundingClientRect();
+                
+                this.dom.cellTooltip.innerHTML = tooltipHtml;
+                this.dom.cellTooltip.style.left = `${rect.left - containerRect.left + this.dom.tableContainer.scrollLeft}px`;
+                this.dom.cellTooltip.style.top = `${rect.top - containerRect.top + this.dom.tableContainer.scrollTop - 40}px`;
+                this.dom.cellTooltip.classList.add('active');
+            },
+            
+            handleCellLeave() {
+                this.dom.cellTooltip.classList.remove('active');
+            },
+            
+            // 🌱 Cell Focus Management
+            focusCell(cell) {
+                // Remove focus from previously focused cell
+                if (this.state.focusedCell) {
+                    this.state.focusedCell.classList.remove('focused');
+                }
+                
+                // Set focus on new cell
+                cell.classList.add('focused');
+                this.state.focusedCell = cell;
+            },
+            
+            // 🧠 Narrative Creation - Connect cells with lines
+            handleKeyDown(e) {
+                // Check for keyboard shortcuts
+                if (e.key === 'Shift') {
+                    this.state.isShiftPressed = true;
+                    document.body.style.cursor = 'crosshair';
+                } else if (e.key === 'r' || e.key === 'R') {
+                    this.resetLayout();
+                } else if (e.key === 'c' || e.key === 'C') {
+                    this.clearNarrative();
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                    // Delete focused cell
+                    if (this.state.focusedCell) {
+                        this.deleteCell(this.state.focusedCell);
+                    }
+                } else if (e.key === '?') {
+                    this.toggleKeyboardHelp();
+                } else if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault(); // Prevent browser's find
+                    this.dom.search.input.focus();
+                } else if (e.key === '1') {
+                    this.changeView('table');
+                } else if (e.key === '2') {
+                    this.changeView('nebula');
+                } else if (e.key === '3') {
+                    this.changeView('narrative');
+                }
+            },
+            
+            handleKeyUp(e) {
+                if (e.key === 'Shift') {
+                    this.state.isShiftPressed = false;
+                    document.body.style.cursor = '';
+                    
+                    // End narrative drawing if in progress
+                    if (this.state.isDrawingNarrative) {
+                        this.state.isDrawingNarrative = false;
+                    }
+                }
+            },
+            
+            toggleKeyboardHelp() {
+                this.dom.keyboardHelp.classList.toggle('active');
+            },
+            
+            drawNarrativeLines() {
+                // Clear existing lines
+                this.state.narrativeLines.forEach(line => line.remove());
+                this.state.narrativeLines = [];
+                
+                // Draw new lines between consecutive selected cells
+                for (let i = 0; i < this.state.selectedCells.length - 1; i++) {
+                    const startCell = this.state.selectedCells[i];
+                    const endCell = this.state.selectedCells[i + 1];
+                    
+                    // Create line element
+                    const line = document.createElement('div');
+                    line.className = 'narrative-line';
+                    
+                    // Get cell positions
+                    const startRect = startCell.getBoundingClientRect();
+                    const endRect = endCell.getBoundingClientRect();
+                    const containerRect = this.dom.tableContainer.getBoundingClientRect();
+                    
+                    // Calculate center points
+                    const startX = startRect.left + startRect.width / 2 - containerRect.left + this.dom.tableContainer.scrollLeft;
+                    const startY = startRect.top + startRect.height / 2 - containerRect.top + this.dom.tableContainer.scrollTop;
+                    const endX = endRect.left + endRect.width / 2 - containerRect.left + this.dom.tableContainer.scrollLeft;
+                    const endY = endRect.top + endRect.height / 2 - containerRect.top + this.dom.tableContainer.scrollTop;
+                    
+                    // Calculate line position and angle
+                    const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                    const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+                    
+                    // Position the line
+                    line.style.width = `${length}px`;
+                    line.style.left = `${startX}px`;
+                    line.style.top = `${startY}px`;
+                    line.style.transform = `rotate(${angle}deg)`;
+                    
+                    // Add to DOM and store reference
+                    this.dom.tableContainer.appendChild(line);
+                    this.state.narrativeLines.push(line);
+                }
+            },
+            
+            clearNarrative() {
+                // Deselect all cells
+                this.state.selectedCells.forEach(cell => {
+                    cell.classList.remove('selected');
+                    cell.classList.remove('in-narrative');
+                });
+                
+                this.state.selectedCells = [];
+                
+                // Remove all narrative lines
+                this.state.narrativeLines.forEach(line => line.remove());
+                this.state.narrativeLines = [];
+                
+                // Hide context button
+                this.updateContextButtonVisibility();
+                
+                this.showStatus('Narrative cleared');
+            },
+            
+            // 🧠 Multi-View System
+            changeView(view) {
+                // Skip if already in this view
+                if (this.state.view.current === view) return;
+                
+                // Restore from context mode if changing views
+                if (this.state.view.contextMode) {
+                    this.exitContextMode();
+                }
+                
+                // Update state
+                this.state.view.current = view;
+                
+                // Update workspace class
+                this.dom.workspace.className = `workspace ${view}-view`;
+                
+                // Update view selector
+                this.updateViewSelector();
+                
+                // Apply view-specific actions
+                if (view === 'narrative' && this.state.selectedCells.length > 0) {
+                    // Layout cells for narrative view
+                    this.layoutNarrativeCells();
+                }
+                
+                // Add view-transition class to all cells for smooth animation
+                document.querySelectorAll('.data-cell').forEach(cell => {
+                    cell.classList.add('view-transition');
+                    
+                    // Remove transition class after animation completes
+                    setTimeout(() => {
+                        cell.classList.remove('view-transition');
+                    }, 500);
+                });
+                
+                // Show appropriate status
+                this.showStatus(`Switched to ${view} view`);
+            },
+            
+            updateViewSelector() {
+                // Update active class on view options
+                this.dom.viewSelector.options.forEach(option => {
+                    option.classList.toggle('active', option.dataset.view === this.state.view.current);
+                });
+                
+                // Position and style the indicator
+                const activeOption = Array.from(this.dom.viewSelector.options).find(
+                    option => option.dataset.view === this.state.view.current
+                );
+                
+                if (activeOption) {
+                    const rect = activeOption.getBoundingClientRect();
+                    const containerRect = this.dom.viewSelector.container.getBoundingClientRect();
+                    
+                    // Update indicator position and width
+                    this.dom.viewSelector.indicator.style.left = 
+                        `${activeOption.offsetLeft}px`;
+                    this.dom.viewSelector.indicator.style.width = 
+                        `${activeOption.offsetWidth}px`;
+                    
+                    // Update indicator class for color
+                    this.dom.viewSelector.indicator.className = 
+                        `view-indicator ${this.state.view.current}`;
+                }
+            },
+            
+            layoutNarrativeCells() {
+                const cells = this.state.selectedCells;
+                if (cells.length === 0) return;
+                
+                // Calculate optimal layout
+                const containerRect = this.dom.tableContainer.getBoundingClientRect();
+                const containerWidth = containerRect.width;
+                const containerHeight = containerRect.height;
+                
+                // Use spacing based on container size
+                const cellSpacing = Math.min(containerWidth, containerHeight) * 0.1;
+                
+                // If only one cell, center it
+                if (cells.length === 1) {
+                    const cell = cells[0];
+                    const cellWidth = cell.offsetWidth;
+                    const cellHeight = cell.offsetHeight;
+                    
+                    const x = (containerWidth - cellWidth) / 2;
+                    const y = (containerHeight - cellHeight) / 2;
+                    
+                    cell.style.left = `${x}px`;
+                    cell.style.top = `${y}px`;
+                    return;
+                }
+                
+                // For multiple cells, use a line or arc arrangement
+                let layout = 'line';
+                
+                if (cells.length <= 5) {
+                    // Linear layout for small narratives
+                    const totalWidth = cells.reduce((sum, cell) => sum + cell.offsetWidth, 0) 
+                        + (cells.length - 1) * cellSpacing;
+                    
+                    let x = (containerWidth - totalWidth) / 2;
+                    const y = containerHeight / 2 - cells[0].offsetHeight / 2;
+                    
+                    cells.forEach(cell => {
+                        cell.style.left = `${x}px`;
+                        cell.style.top = `${y}px`;
+                        
+                        x += cell.offsetWidth + cellSpacing;
+                    });
+                } else {
+                    // Arc layout for larger narratives
+                    const centerX = containerWidth / 2;
+                    const centerY = containerHeight / 2;
+                    const radius = Math.min(containerWidth, containerHeight) * 0.3;
+                    
+                    cells.forEach((cell, index) => {
+                        const angle = (Math.PI * 1.5) + (Math.PI * index / (cells.length - 1));
+                        
+                        const x = centerX + radius * Math.cos(angle) - cell.offsetWidth / 2;
+                        const y = centerY + radius * Math.sin(angle) - cell.offsetHeight / 2;
+                        
+                        cell.style.left = `${x}px`;
+                        cell.style.top = `${y}px`;
+                    });
+                }
+                
+                // Redraw narrative lines
+                this.drawNarrativeLines();
+            },
+            
+            // 🧠 Context Mode
+            showInContext() {
+                if (this.state.selectedCells.length === 0) return;
+                
+                // Set context mode
+                this.state.view.contextMode = true;
+                
+                // Switch back to table view
+                this.changeView('table');
+                
+                // Re-render to show only relevant rows
+                this.renderTable();
+                
+                // Show context indicator
+                this.dom.contextIndicator.classList.add('active');
+                
+                // Hide context button
+                this.dom.contextButton.classList.remove('active');
+                
+                this.showStatus('Showing narrative in original context');
+            },
+            
+            exitContextMode() {
+                // Exit context mode
+                this.state.view.contextMode = false;
+                
+                // Re-render to show all rows
+                this.renderTable();
+                
+                // Hide context indicator
+                this.dom.contextIndicator.classList.remove('active');
+                
+                // Show context button if there's a narrative
+                this.updateContextButtonVisibility();
+                
+                this.showStatus('Exited context mode');
+            },
+            
+            // 🌿 UI Element Management
+            updateContextButtonVisibility() {
+                // Show context button only if there are selected cells
+                this.dom.contextButton.classList.toggle(
+                    'active', 
+                    this.state.selectedCells.length > 0 && !this.state.view.contextMode
+                );
+            },
+            
+            restoreSelectionState() {
+                // Store old cells
+                const oldSelectedCells = this.state.selectedCells;
+                this.state.selectedCells = [];
+                
+                // Loop through old cells and find any that are still in the DOM
+                oldSelectedCells.forEach(oldCell => {
+                    const rowIndex = parseInt(oldCell.dataset.row);
+                    const colIndex = parseInt(oldCell.dataset.col);
+                    
+                    // Look for this cell in the current display
+                    const newCell = document.getElementById(`cell-${rowIndex}-${colIndex}`);
+                    if (newCell) {
+                        // Restore selection state
+                        newCell.classList.add('selected');
+                        newCell.classList.add('in-narrative');
+                        this.state.selectedCells.push(newCell);
+                    }
+                });
+                
+                // Redraw narrative lines
+                this.drawNarrativeLines();
+            },
+            
+            // 🌿 Layout Management - Reset to original
+            resetLayout() {
+                // Find all floating cells
+                const floatingCells = document.querySelectorAll('.data-cell.floating');
+                
+                floatingCells.forEach(cell => {
+                    const rowIndex = parseInt(cell.dataset.row);
+                    const colIndex = parseInt(cell.dataset.col);
+                    
+                    // Find the cell's row in display data
+                    let rowElement = null;
+                    for (let i = 0; i < this.state.displayData.length; i++) {
+                        if (this.state.displayData[i].index === rowIndex) {
+                            rowElement = this.dom.table.rows[i + 1]; // +1 for header row
+                            break;
+                        }
+                    }
+                    
+                    if (rowElement) {
+                        const td = rowElement.cells[colIndex];
+                        
+                        if (td) {
+                            // Remove floating class
+                            cell.classList.remove('floating');
+                            
+                            // Remove any placeholders
+                            const placeholder = td.querySelector('.cell-placeholder');
+                            if (placeholder) {
+                                placeholder.remove();
+                            }
+                            
+                            // Reset position styles
+                            cell.style.left = '';
+                            cell.style.top = '';
+                            
+                            // Put the cell back
+                            td.appendChild(cell);
+                            
+                            // Update state
+                            this.state.originalPositions[cell.id].inTable = true;
+                        }
+                    }
+                });
+                
+                // Redraw narrative lines
+                this.drawNarrativeLines();
+                
+                this.showStatus('Layout reset to original');
+            },
+            
+            // 🧠 Search Function
+            performSearch() {
+                const query = this.dom.search.input.value.trim().toLowerCase();
+                
+                if (!query) {
+                    // Clear search
+                    this.state.search.query = '';
+                    this.state.search.results = [];
+                    this.renderTable();
+                    return;
+                }
+                
+                // Set search query
+                this.state.search.query = query;
+                
+                // Search across all columns
+                const results = [];
+                
+                this.state.data.forEach((row, index) => {
+                    // Skip hidden rows
+                    if (this.state.hidden.rows.has(index)) return;
+                    
+                    // Check each column for a match
+                    for (const column of this.state.columns) {
+                        const value = (row[column] || '').toString().toLowerCase();
+                        if (value.includes(query)) {
+                            results.push(index);
+                            break; // Found in one column, no need to check others
+                        }
+                    }
+                });
+                
+                // Store results
+                this.state.search.results = results;
+                
+                // Update UI
+                if (results.length > 0) {
+                    this.renderTable();
+                    this.showStatus(`Found ${results.length} matches for "${query}"`);
+                } else {
+                    this.showStatus(`No matches found for "${query}"`);
+                }
+            },
+            
+            // 🌿 Sort Function
+            sortBy(column) {
+                // Toggle sort direction if already sorted by this column
+                if (this.state.sorting.column === column) {
+                    this.state.sorting.direction = 
+                        this.state.sorting.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.state.sorting.column = column;
+                    this.state.sorting.direction = 'asc';
+                }
+                
+                // Sort the data
+                this.state.data.sort((a, b) => {
+                    const valueA = (a[column] || '').toString().toLowerCase();
+                    const valueB = (b[column] || '').toString().toLowerCase();
+                    
+                    // Try numeric sort first
+                    const numA = parseFloat(valueA);
+                    const numB = parseFloat(valueB);
+                    
+                    // If both are valid numbers, sort numerically
+                    if (!isNaN(numA) && !isNaN(numB)) {
+                        return this.state.sorting.direction === 'asc' 
+                            ? numA - numB 
+                            : numB - numA;
+                    }
+                    
+                    // Otherwise sort alphabetically
+                    if (valueA < valueB) {
+                        return this.state.sorting.direction === 'asc' ? -1 : 1;
+                    }
+                    if (valueA > valueB) {
+                        return this.state.sorting.direction === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                });
+                
+                // Re-render the table
+                this.renderTable();
+                
+                // Show status
+                this.showStatus(`Sorted by ${column} (${this.state.sorting.direction === 'asc' ? 'ascending' : 'descending'})`);
+            },
+            
+            // 🌿 Status Messages - User feedback
+            showStatus(message) {
+                this.dom.statusMessage.textContent = message;
+                this.dom.statusMessage.classList.add('active');
+                
+                setTimeout(() => {
+                    this.dom.statusMessage.classList.remove('active');
+                }, 3000);
+            },
+            
+            showLoading() {
+                this.dom.loading.classList.add('active');
+            },
+            
+            hideLoading() {
+                this.dom.loading.classList.remove('active');
+            },
+            
+            // 🪴 Instruction Panel Management
+            hideInstructions() {
+                this.dom.instructions.style.display = 'none';
+            }
+        };
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            DataBraid.init();
+        });
+    </script>
+</body>
+</html>
