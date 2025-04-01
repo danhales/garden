@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NodePad v1.🌿1.1</title>
+    <title>NodePad v1.🌳1.0</title>
     <!-- 
-        NodePad v1.🌿1.1: Visual Knowledge Network
+        NodePad v1.🌳1.0: Visual Knowledge Network
         
         Version History:
         v0.0.1 - Initial implementation with popup editor and basic node display
@@ -19,17 +19,23 @@
         v1.0.0 - Complete constructivist rewrite with knot-compacted architecture
         v1.🪴1.0 - Simplified circular nodes with emoji identifiers and hover information
         v1.🌿1.1 - Enhanced node display with emoji/title toggle and fixed emoji picker width
+        v1.🌳1.0 - Stable release with independent emoji/title controls, node coloring, smart positioning,
+                 node removal, and JSON import functionality
         
         DocTrellis Feature Status:
-        🌿 Core Architecture - Herb - Constructivist template system with metadata-driven design
-        🌿 Node Management - Herb - Create, select, edit, and drag nodes
-        🪴 Edge Connections - Potted Plant - Connections between nodes
-        🌿 Network View - Herb - Canvas-based visualization with toggle for emoji/title display
-        🌱 Export/Import - Seedling - JSON and CSV export functionality
+        🌳 Core Architecture - Tree - Constructivist template system with metadata-driven design
+        🌳 Node Management - Tree - Create, select, edit, remove, and drag nodes
+        🌿 Edge Connections - Herb - Connections between nodes
+        🌳 Network View - Tree - Canvas-based visualization with independent emoji/title display options
+        🌿 Node Customization - Herb - Colors and emoji selection for visual organization
+        🌱 Import/Export - Seedling - JSON export and import functionality
         
-        Leaf Pile (Pruned Ideas):
+        Leaf Pile (Pruned Features):
+        🍂 CSV Export - Removed to simplify data handling
         🍂 Source Explorer - Browser-based source code exploration using emoji markers
         🍂 Custom node styles - Multiple visual presentation options for node content
+        🍂 Static Tooltips - Replaced with more contextual information displays
+        🍂 Fixed Node Sizing - Replaced with dynamic sizing based on content and display mode
     -->
     <style>
         /* Base Variables - Single Source of Truth */
@@ -43,6 +49,7 @@
             --color-text-muted: #666666;
             --color-primary: #1890ff;
             --color-primary-dark: #096dd9;
+            --color-primary-light: #e6f7ff;
             --color-success: #52c41a;
             --color-warning: #faad14;
             --color-error: #f5222d;
@@ -162,6 +169,7 @@
         .controls {
             display: flex;
             gap: var(--space-sm);
+            flex-wrap: wrap;
         }
         
         button {
@@ -193,6 +201,16 @@
             background-color: var(--color-primary-dark);
         }
         
+        button.danger {
+            background-color: var(--color-error);
+            color: white;
+            border-color: var(--color-error);
+        }
+        
+        button.danger:hover {
+            background-color: #d9363e;
+        }
+        
         /* Editor Styles */
         .editor-header {
             padding: var(--space-md);
@@ -211,6 +229,10 @@
         
         .node-emoji {
             font-size: 1.2em;
+        }
+
+        .unused-class {
+            font-size: 1em;
         }
         
         .editor-subtitle {
@@ -252,7 +274,7 @@
             margin-bottom: var(--space-md);
         }
         
-        .emoji-label {
+        .emoji-label, .color-label {
             display: block;
             margin-bottom: var(--space-xs);
             font-weight: var(--font-weight-bold);
@@ -378,26 +400,249 @@
             background-color: var(--color-surface-alt);
         }
         
-        /* Display mode toggle - new style */
-        .display-mode-indicator {
-            display: inline-flex;
+        /* Color picker styles */
+        .color-picker {
+            position: absolute;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow);
+            padding: var(--space-md);
+            z-index: 100;
+            display: none;
+            width: 280px;
+        }
+        
+        .color-picker.active {
+            display: block;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-sm);
+            margin-top: var(--space-sm);
+            margin-bottom: var(--space-sm);
+        }
+        
+        .color-item {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1px solid var(--color-border);
+            transition: transform var(--transition-fast);
+        }
+        
+        .color-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-item.active {
+            border: 2px solid var(--color-primary);
+        }
+        
+        .custom-color-container {
+            display: flex;
             align-items: center;
-            gap: var(--space-xs);
-            margin-left: var(--space-sm);
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+        
+        #custom-color {
+            padding: 0;
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-sm);
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+        
+        /* Display mode toggles */
+        .display-toggles {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-border);
+            border-radius: 10px;
+            transition: var(--transition-fast);
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: var(--transition-fast);
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--color-primary);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .toggle-label {
             font-size: var(--font-size-sm);
             color: var(--color-text-muted);
-            transition: opacity var(--transition-fast);
+        }
+        
+        /* Node color selector */
+        .color-select-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        #node-color-select {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--color-border);
+            cursor: pointer;
+        }
+        
+        /* File import styles */
+        .file-input {
+            display: none;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .editor-container {
+                width: 100%;
+                height: 40%;
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+            }
+        }
+        
+        /* Node removal confirmation modal */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--transition-normal);
+        }
+        
+        .modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background-color: var(--color-surface);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow);
+            width: 400px;
+            max-width: 90%;
+            transform: translateY(-20px);
+            transition: transform var(--transition-normal);
+        }
+        
+        .modal-backdrop.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .modal-title {
+            margin: 0;
+            font-size: var(--font-size-lg);
+            color: var(--color-error);
+        }
+        
+        .modal-body {
+            padding: var(--space-md);
+        }
+        
+        .modal-footer {
+            padding: var(--space-md);
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-md);
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1 class="title">📝 NodePad <span class="version">v1.🌿1.1</span></h1>
+        <h1 class="title">📝 NodePad <span class="version">v1.🌳1.0</span></h1>
         <div class="controls">
             <button id="add-node-btn">Add Node</button>
-            <button id="toggle-display-btn">Show Titles</button>
+            <div class="display-toggles">
+                <div class="toggle-container">
+                    <span class="toggle-label">Emoji</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="emoji-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-container">
+                    <span class="toggle-label">Titles</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="title-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
             <button id="export-json-btn">Export JSON</button>
-            <button id="export-csv-btn">Export CSVs</button>
+            <button id="import-json-btn">Import JSON</button>
+            <input type="file" id="import-file" class="file-input" accept=".json">
         </div>
     </div>
     
@@ -426,6 +671,10 @@
                         <label class="emoji-label" for="node-emoji-select">Node Icon:</label>
                         <button id="node-emoji-select">🌱</button>
                     </div>
+                    <div class="color-select-container">
+                        <label class="color-label" for="node-color-select">Color:</label>
+                        <div id="node-color-select" style="background-color: #ffffff;"></div>
+                    </div>
                     <div style="flex: 1;">
                         <label class="name-label" for="node-name">Node Title:</label>
                         <input type="text" id="node-name" placeholder="Enter a title for this node">
@@ -435,6 +684,7 @@
                 <textarea id="node-content" placeholder="Enter your notes here..."></textarea>
                 
                 <div class="editor-actions">
+                    <button id="remove-node-btn" class="danger">Remove Node</button>
                     <button id="update-node-btn" class="primary">Update Node</button>
                 </div>
             </div>
@@ -446,16 +696,42 @@
         <h3>Select an Emoji</h3>
         <div class="emoji-grid" id="emoji-grid"></div>
     </div>
+    
+    <!-- Color Picker Dialog -->
+    <div class="color-picker" id="color-picker">
+        <h3>Select a Color</h3>
+        <div class="color-grid" id="color-grid"></div>
+        <div class="custom-color-container">
+            <label for="custom-color">Custom color:</label>
+            <input type="color" id="custom-color" value="#ffffff">
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal for Node Removal -->
+    <div class="modal-backdrop" id="remove-confirmation-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Remove Node?</h3>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove this node and all its connections? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-remove-btn">Cancel</button>
+                <button id="confirm-remove-btn" class="danger">Remove</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         /**
-         * NodePad v1.🌿1.1: Visual Knowledge Network
+         * NodePad v1.🌳1.0: Visual Knowledge Network
          * 
          * A nonlinear note-taking application that represents ideas as 
          * interconnected nodes in a visual network, making it easier to
          * organize complex thoughts and relationships.
          * 
-         * @version 1.🌿1.1
+         * @version 1.🌳1.0
          */
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -469,12 +745,12 @@
              * Centralized configuration that serves as a single source of truth
              * for all application parameters.
              * 
-             * @version 1.🌿1.1 - Enhanced with display mode configuration
+             * @version 1.🌳1.0 - Enhanced with independent display controls and color options
              */
             const META = {
                 /** Application version information */
                 version: {
-                    number: '1.🌿1.1',
+                    number: '1.🌳1.0',
                     name: 'Visual Knowledge Network',
                     date: '2025-03-31'
                 },
@@ -496,7 +772,8 @@
                     defaults: {
                         size: 60,
                         emoji: '🌱',
-                        content: ''
+                        content: '',
+                        color: '#ffffff' // Default white background
                     },
                     selected: {
                         outlineWidth: 3,
@@ -504,10 +781,10 @@
                     },
                     dragThreshold: 5,  // Pixels of movement needed to start dragging
                     
-                    // New display mode configuration
+                    // Display configuration with independent controls
                     display: {
-                        modes: ['emoji', 'title'],
-                        default: 'emoji',
+                        emojiVisible: true,
+                        titleVisible: false,
                         transition: {
                             duration: 300, // ms
                             easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
@@ -516,8 +793,33 @@
                             fontSize: 0.3, // proportion of node size
                             minWidth: 1.0, // proportion of node size
                             padding: 0.25 // proportion of node size
+                        },
+                        emoji: {
+                            size: 0.4 // proportion of node size
                         }
-                    }
+                    },
+                    
+                    // Positioning logic
+                    positioning: {
+                        // Horizontal spacing (for compact emoji view)
+                        horizontalOffset: 2, // multiplier of node size
+                        // Vertical spacing (for expanded title view)
+                        verticalOffset: 1.5, // multiplier of node size
+                    },
+                    
+                    // Color options
+                    colors: [
+                        '#ffffff', // White (default)
+                        '#f0f4c3', // Light yellow
+                        '#c8e6c9', // Light green
+                        '#bbdefb', // Light blue
+                        '#d1c4e9', // Light purple
+                        '#ffccbc', // Light orange
+                        '#ffcdd2', // Light red
+                        '#e1bee7', // Light pink
+                        '#b2dfdb', // Light teal
+                        '#f5f5f5'  // Light gray
+                    ]
                 },
                 
                 /** Edge configuration */
@@ -530,22 +832,13 @@
                     }
                 },
                 
-                /** Export configuration */
-                export: {
+                /** Export/Import configuration */
+                dataTransfer: {
                     formats: {
                         json: {
                             extension: 'json',
-                            contentType: 'application/json'
-                        },
-                        nodeCsv: {
-                            extension: 'csv',
-                            contentType: 'text/csv',
-                            filename: 'nodepad-nodes.csv'
-                        },
-                        edgeCsv: {
-                            extension: 'csv',
-                            contentType: 'text/csv',
-                            filename: 'nodepad-edges.csv'
+                            contentType: 'application/json',
+                            filename: 'nodepad-network.json'
                         }
                     }
                 },
@@ -574,19 +867,26 @@
                     welcome: {
                         emoji: '📝',
                         name: 'Welcome to NodePad!',
-                        content: 'This is your first note in your visual knowledge network.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Each node has its own emoji identifier\n• Toggle between emoji and title views\n\nStart organizing your ideas!'
+                        content: 'This is your first note in your visual knowledge network.\n\n• Click nodes to edit their content\n• Drag nodes to rearrange them\n• Connect nodes to show relationships\n• Customize nodes with colors and emojis\n• Toggle between emoji and title views\n\nStart organizing your ideas!',
+                        color: '#bbdefb' // Light blue for welcome node
                     },
                     status: {
                         ready: 'Ready',
                         selected: nodeName => `Selected: ${nodeName}`,
                         created: nodeName => `Created: ${nodeName}`,
                         updated: nodeName => `Updated: ${nodeName}`,
+                        removed: nodeName => `Removed: ${nodeName}`,
                         exported: format => `Exported ${format} file`,
-                        displayChanged: mode => `Display mode: ${mode}`
+                        imported: fileInfo => `Imported ${fileInfo}`,
+                        displayChanged: mode => `Display mode updated`
                     },
-                    displayToggle: {
-                        emoji: 'Show Titles',
-                        title: 'Show Emojis'
+                    modals: {
+                        removeNode: {
+                            title: 'Remove Node?',
+                            message: 'Are you sure you want to remove this node and all its connections? This action cannot be undone.',
+                            cancel: 'Cancel',
+                            confirm: 'Remove'
+                        }
                     }
                 }
             };
@@ -601,7 +901,7 @@
              * Provides consistent patterns for creating application objects
              * like nodes and edges.
              * 
-             * @version 1.🌿1.1 - Maintained from previous version
+             * @version 1.🌳1.0 - Enhanced with color support for nodes
              */
             const Templates = {
                 /**
@@ -617,6 +917,7 @@
                         emoji: props.emoji || META.node.defaults.emoji,
                         name: props.name || '',
                         content: props.content || META.node.defaults.content,
+                        color: props.color || META.node.defaults.color,
                         x: props.x || 0,
                         y: props.y || 0,
                         size: props.size || META.node.defaults.size
@@ -647,7 +948,7 @@
              * 
              * Centralizes all application data and state management functions.
              * 
-             * @version 1.🌿1.1 - Enhanced with display mode state and animation
+             * @version 1.🌳1.0 - Enhanced with independent display controls, node removal, and import/export
              */
             const State = {
                 /** Graph data containing nodes and edges */
@@ -666,14 +967,15 @@
                     dragOffsetX: 0,
                     dragOffsetY: 0,
                     hoveredNode: null,
-                    displayMode: META.node.display.default,
                     
-                    // Animation state
-                    isTransitioning: false,
-                    transitionStartTime: 0,
-                    transitionDuration: META.animation.duration,
-                    transitionFromMode: null,
-                    animationId: null
+                    // New display state with independent controls
+                    display: {
+                        showEmoji: META.node.display.emojiVisible,
+                        showTitle: META.node.display.titleVisible,
+                        isTransitioning: false,
+                        transitionStartTime: 0,
+                        animationId: null
+                    }
                 },
                 
                 /** Global counters */
@@ -710,6 +1012,41 @@
                 },
                 
                 /**
+                 * Removes a node and all its connected edges
+                 * @param {string} nodeId - ID of node to remove
+                 * @returns {boolean} Success status
+                 */
+                removeNode: function(nodeId) {
+                    // Find the node
+                    const nodeIndex = this.graph.nodes.findIndex(n => n.id === nodeId);
+                    if (nodeIndex === -1) return false;
+                    
+                    // Get node name for status update
+                    const nodeName = this.graph.nodes[nodeIndex].name || 'Untitled Node';
+                    
+                    // Remove all connected edges
+                    this.graph.edges = this.graph.edges.filter(edge => 
+                        edge.sourceId !== nodeId && edge.targetId !== nodeId
+                    );
+                    
+                    // Remove the node
+                    this.graph.nodes.splice(nodeIndex, 1);
+                    
+                    // Update selection if removed node was selected
+                    if (this.ui.selectedNode && this.ui.selectedNode.id === nodeId) {
+                        this.selectNode(null);
+                    }
+                    
+                    // Update display
+                    Renderer.draw();
+                    
+                    // Update status
+                    UI.updateStatus(META.templates.status.removed(nodeName));
+                    
+                    return true;
+                },
+                
+                /**
                  * Connects two nodes with an edge
                  * @param {string} sourceId - ID of source node
                  * @param {string} targetId - ID of target node
@@ -732,89 +1069,163 @@
                     for (let i = this.graph.nodes.length - 1; i >= 0; i--) {
                         const node = this.graph.nodes[i];
                         
-                        // Get node center
-                        const centerX = node.x + node.size / 2;
-                        const centerY = node.y + node.size / 2;
+                        // Calculate node dimensions based on display mode
+                        const dimensions = this.calculateNodeDimensions(node);
                         
-                        if (this.ui.displayMode === 'emoji') {
-                            // For emoji mode, check if point is inside circle
-                            const dx = x - centerX;
-                            const dy = y - centerY;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
+                        // Simple rectangle collision check
+                        if (x >= dimensions.left && x <= dimensions.right && 
+                            y >= dimensions.top && y <= dimensions.bottom) {
+                            // Additional check for rounded corners
+                            const radius = dimensions.height / 2;
                             
-                            if (distance <= node.size / 2) {
-                                return node;
-                            }
-                        } else {
-                            // For title mode, measure text and check if in rounded rectangle
-                            const canvas = DOM.canvas;
-                            const ctx = DOM.ctx;
-                            
-                            // Set font for text measurement
-                            const fontSize = node.size * META.node.display.title.fontSize;
-                            ctx.font = `${fontSize}px ${window.getComputedStyle(document.body).fontFamily}`;
-                            
-                            // Measure the text
-                            const textMetrics = ctx.measureText(node.name || 'Untitled');
-                            const textWidth = textMetrics.width;
-                            
-                            // Calculate dimensions
-                            const minWidth = node.size;
-                            const padding = node.size * META.node.display.title.padding;
-                            const width = Math.max(minWidth, textWidth + padding * 2);
-                            const height = node.size;
-                            
-                            // Calculate bounding box
-                            const left = centerX - width / 2;
-                            const right = centerX + width / 2;
-                            const top = centerY - height / 2;
-                            const bottom = centerY + height / 2;
-                            
-                            // Simple rectangle collision check
-                            // For rounded corners, we should also check the corner radii
-                            if (x >= left && x <= right && y >= top && y <= bottom) {
-                                // Additional check for rounded corners
-                                const radius = height / 2;
-                                
-                                // If in corner regions, check distance to corner center
-                                if (x < left + radius && y < top + radius) { 
+                            // Check if in corner regions
+                            if (dimensions.isRounded) {
+                                // Check corners for rectangular nodes
+                                if (x < dimensions.left + radius && y < dimensions.top + radius) {
                                     // Top-left corner
-                                    const cornerX = left + radius;
-                                    const cornerY = top + radius;
+                                    const cornerX = dimensions.left + radius;
+                                    const cornerY = dimensions.top + radius;
                                     const dx = x - cornerX;
                                     const dy = y - cornerY;
-                                    if (Math.sqrt(dx * dx + dy * dy) > radius) return null;
+                                    if (Math.sqrt(dx * dx + dy * dy) > radius) continue;
                                 }
-                                else if (x > right - radius && y < top + radius) { 
+                                else if (x > dimensions.right - radius && y < dimensions.top + radius) {
                                     // Top-right corner
-                                    const cornerX = right - radius;
-                                    const cornerY = top + radius;
+                                    const cornerX = dimensions.right - radius;
+                                    const cornerY = dimensions.top + radius;
                                     const dx = x - cornerX;
                                     const dy = y - cornerY;
-                                    if (Math.sqrt(dx * dx + dy * dy) > radius) return null;
+                                    if (Math.sqrt(dx * dx + dy * dy) > radius) continue;
                                 }
-                                else if (x < left + radius && y > bottom - radius) { 
+                                else if (x < dimensions.left + radius && y > dimensions.bottom - radius) {
                                     // Bottom-left corner
-                                    const cornerX = left + radius;
-                                    const cornerY = bottom - radius;
+                                    const cornerX = dimensions.left + radius;
+                                    const cornerY = dimensions.bottom - radius;
                                     const dx = x - cornerX;
                                     const dy = y - cornerY;
-                                    if (Math.sqrt(dx * dx + dy * dy) > radius) return null;
+                                    if (Math.sqrt(dx * dx + dy * dy) > radius) continue;
                                 }
-                                else if (x > right - radius && y > bottom - radius) { 
+                                else if (x > dimensions.right - radius && y > dimensions.bottom - radius) {
                                     // Bottom-right corner
-                                    const cornerX = right - radius;
-                                    const cornerY = bottom - radius;
+                                    const cornerX = dimensions.right - radius;
+                                    const cornerY = dimensions.bottom - radius;
                                     const dx = x - cornerX;
                                     const dy = y - cornerY;
-                                    if (Math.sqrt(dx * dx + dy * dy) > radius) return null;
+                                    if (Math.sqrt(dx * dx + dy * dy) > radius) continue;
                                 }
-                                
-                                return node;
+                            } else if (dimensions.isCircular) {
+                                // Calculate distance from center for circular nodes
+                                const centerX = (dimensions.left + dimensions.right) / 2;
+                                const centerY = (dimensions.top + dimensions.bottom) / 2;
+                                const dx = x - centerX;
+                                const dy = y - centerY;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                if (distance > radius) continue;
                             }
+                            
+                            return node;
                         }
                     }
                     return null;
+                },
+                
+                /**
+                 * Calculate node dimensions based on display mode
+                 * @param {Object} node - Node to calculate dimensions for
+                 * @returns {Object} Node dimension information including bounds and shape
+                 */
+                calculateNodeDimensions: function(node) {
+                    const centerX = node.x + node.size / 2;
+                    const centerY = node.y + node.size / 2;
+                    
+                    // Calculate based on current display mode
+                    const showEmoji = this.ui.display.showEmoji;
+                    const showTitle = this.ui.display.showTitle;
+                    
+                    // Both emoji and title
+                    if (showEmoji && showTitle) {
+                        // Measure text
+                        const canvas = DOM.canvas;
+                        const ctx = DOM.ctx;
+                        const fontSize = node.size * META.node.display.title.fontSize;
+                        ctx.font = `${fontSize}px ${window.getComputedStyle(document.body).fontFamily}`;
+                        const textWidth = ctx.measureText(node.name || 'Untitled').width;
+                        
+                        // Calculate dimensions
+                        const padding = node.size * META.node.display.title.padding;
+                        const minWidth = node.size;
+                        const width = Math.max(minWidth, textWidth + padding * 2);
+                        const height = node.size;
+                        
+                        // Calculate bounds
+                        return {
+                            left: centerX - width / 2,
+                            right: centerX + width / 2,
+                            top: centerY - height / 2,
+                            bottom: centerY + height / 2,
+                            width: width,
+                            height: height,
+                            isRounded: true,
+                            isCircular: false
+                        };
+                    } 
+                    // Only emoji
+                    else if (showEmoji && !showTitle) {
+                        // Circular node
+                        const radius = node.size / 2;
+                        return {
+                            left: centerX - radius,
+                            right: centerX + radius,
+                            top: centerY - radius,
+                            bottom: centerY + radius,
+                            width: node.size,
+                            height: node.size,
+                            isRounded: false,
+                            isCircular: true
+                        };
+                    }
+                    // Only title
+                    else if (!showEmoji && showTitle) {
+                        // Text-only node
+                        const canvas = DOM.canvas;
+                        const ctx = DOM.ctx;
+                        const fontSize = node.size * META.node.display.title.fontSize;
+                        ctx.font = `${fontSize}px ${window.getComputedStyle(document.body).fontFamily}`;
+                        const textWidth = ctx.measureText(node.name || 'Untitled').width;
+                        
+                        // Calculate dimensions
+                        const padding = node.size * META.node.display.title.padding;
+                        const minWidth = node.size * 0.8; // Slightly smaller than emoji node
+                        const width = Math.max(minWidth, textWidth + padding * 2);
+                        const height = node.size * 0.7; // Smaller height for text-only
+                        
+                        // Calculate bounds
+                        return {
+                            left: centerX - width / 2,
+                            right: centerX + width / 2,
+                            top: centerY - height / 2,
+                            bottom: centerY + height / 2,
+                            width: width,
+                            height: height,
+                            isRounded: true,
+                            isCircular: false
+                        };
+                    }
+                    // Default: minimal node (fallback if both disabled)
+                    else {
+                        // Small dot node
+                        const smallRadius = node.size / 3;
+                        return {
+                            left: centerX - smallRadius,
+                            right: centerX + smallRadius,
+                            top: centerY - smallRadius,
+                            bottom: centerY + smallRadius,
+                            width: smallRadius * 2,
+                            height: smallRadius * 2,
+                            isRounded: false,
+                            isCircular: true
+                        };
+                    }
                 },
                 
                 /**
@@ -833,42 +1244,70 @@
                 },
                 
                 /**
-                 * Toggles the node display mode
+                 * Toggles emoji display
+                 * @param {boolean} visible - Whether emoji should be visible
                  */
-                toggleDisplayMode: function() {
-                    // Store current mode for transition
-                    this.ui.transitionFromMode = this.ui.displayMode;
+                toggleEmojiDisplay: function(visible) {
+                    if (this.ui.display.showEmoji === visible) return;
                     
-                    // Toggle the mode
-                    this.ui.displayMode = (this.ui.displayMode === 'emoji') ? 'title' : 'emoji';
+                    this.ui.display.showEmoji = visible;
                     
+                    // Check that at least one display mode is enabled
+                    if (!this.ui.display.showEmoji && !this.ui.display.showTitle) {
+                        // Enable title mode if trying to hide both
+                        this.ui.display.showTitle = true;
+                        UI.updateDisplayToggles();
+                    }
+                    
+                    // Start transition animation
+                    this.startDisplayTransition();
+                    
+                    UI.updateStatus(META.templates.status.displayChanged('emoji: ' + visible));
+                },
+                
+                /**
+                 * Toggles title display
+                 * @param {boolean} visible - Whether titles should be visible
+                 */
+                toggleTitleDisplay: function(visible) {
+                    if (this.ui.display.showTitle === visible) return;
+                    
+                    this.ui.display.showTitle = visible;
+                    
+                    // Check that at least one display mode is enabled
+                    if (!this.ui.display.showEmoji && !this.ui.display.showTitle) {
+                        // Enable emoji mode if trying to hide both
+                        this.ui.display.showEmoji = true;
+                        UI.updateDisplayToggles();
+                    }
+                    
+                    // Start transition animation
+                    this.startDisplayTransition();
+                    
+                    UI.updateStatus(META.templates.status.displayChanged('title: ' + visible));
+                },
+                
+                /**
+                 * Starts display transition animation
+                 */
+                startDisplayTransition: function() {
                     // Set up animation state
-                    this.ui.isTransitioning = true;
-                    this.ui.transitionStartTime = performance.now();
+                    this.ui.display.isTransitioning = true;
+                    this.ui.display.transitionStartTime = performance.now();
                     
                     // Start animation if not already running
-                    if (!this.ui.animationId) {
-                        this.ui.animationId = requestAnimationFrame(() => this.animateTransition());
+                    if (!this.ui.display.animationId) {
+                        this.ui.display.animationId = requestAnimationFrame(() => this.animateDisplayTransition());
                     }
-                    
-                    // Update button text
-                    const button = DOM.elements['toggle-display-btn'];
-                    if (button) {
-                        button.textContent = (this.ui.displayMode === 'emoji') ? 
-                            META.templates.displayToggle.emoji : 
-                            META.templates.displayToggle.title;
-                    }
-                    
-                    UI.updateStatus(META.templates.status.displayChanged(this.ui.displayMode));
                 },
                 
                 /**
                  * Animate transition between display modes
                  */
-                animateTransition: function() {
+                animateDisplayTransition: function() {
                     const now = performance.now();
-                    const elapsed = now - this.ui.transitionStartTime;
-                    const progress = Math.min(elapsed / this.ui.transitionDuration, 1);
+                    const elapsed = now - this.ui.display.transitionStartTime;
+                    const progress = Math.min(elapsed / META.animation.duration, 1);
                     
                     // Use easing function for smoother animation
                     const easedProgress = this.easeInOutCubic(progress);
@@ -878,11 +1317,11 @@
                     
                     if (progress < 1) {
                         // Continue animation
-                        this.ui.animationId = requestAnimationFrame(() => this.animateTransition());
+                        this.ui.display.animationId = requestAnimationFrame(() => this.animateDisplayTransition());
                     } else {
                         // End transition
-                        this.ui.isTransitioning = false;
-                        this.ui.animationId = null;
+                        this.ui.display.isTransitioning = false;
+                        this.ui.display.animationId = null;
                         Renderer.draw(); // Final frame
                     }
                 },
@@ -899,15 +1338,79 @@
                 },
                 
                 /**
-                 * Exports graph data to specified format
-                 * @param {string} format - Format to export ('json', 'csv')
+                 * Exports graph data to JSON
                  */
-                exportData: function(format) {
-                    if (format === 'json') {
-                        ExportManager.toJson();
-                    } else if (format === 'csv') {
-                        ExportManager.toCsv();
+                exportData: function() {
+                    TransferManager.exportJson();
+                },
+                
+                /**
+                 * Imports graph data from JSON
+                 * @param {File} file - JSON file to import
+                 */
+                importData: function(file) {
+                    TransferManager.importJson(file);
+                },
+                
+                /**
+                 * Resets the application state
+                 * @param {Object} newData - Optional new data to initialize with
+                 */
+                reset: function(newData = null) {
+                    // Clear current state
+                    this.graph.nodes = [];
+                    this.graph.edges = [];
+                    this.selectNode(null);
+                    
+                    // Initialize with new data if provided
+                    if (newData) {
+                        // Reset counters
+                        if (newData.nodes && newData.nodes.length > 0) {
+                            // Find highest ID numbers and set counters accordingly
+                            const nodeIds = newData.nodes
+                                .map(n => parseInt(n.id.replace('node-', '')))
+                                .filter(id => !isNaN(id));
+                            
+                            if (nodeIds.length > 0) {
+                                this.counters.nextNodeId = Math.max(...nodeIds) + 1;
+                            }
+                        }
+                        
+                        if (newData.edges && newData.edges.length > 0) {
+                            const edgeIds = newData.edges
+                                .map(e => parseInt(e.id.replace('edge-', '')))
+                                .filter(id => !isNaN(id));
+                            
+                            if (edgeIds.length > 0) {
+                                this.counters.nextEdgeId = Math.max(...edgeIds) + 1;
+                            }
+                        }
+                        
+                        // Copy nodes and edges
+                        if (newData.nodes) {
+                            // Ensure all nodes have required properties
+                            this.graph.nodes = newData.nodes.map(node => {
+                                // Apply defaults for missing properties
+                                return {
+                                    id: node.id,
+                                    emoji: node.emoji || META.node.defaults.emoji,
+                                    name: node.name || '',
+                                    content: node.content || '',
+                                    color: node.color || META.node.defaults.color,
+                                    x: node.x || 0,
+                                    y: node.y || 0,
+                                    size: node.size || META.node.defaults.size
+                                };
+                            });
+                        }
+                        
+                        if (newData.edges) {
+                            this.graph.edges = [...newData.edges];
+                        }
                     }
+                    
+                    // Redraw
+                    Renderer.draw();
                 }
             };
             
@@ -920,7 +1423,7 @@
              * 
              * Provides a single interface to all DOM elements used by the application.
              * 
-             * @version 1.🌿1.1 - Added toggle display button
+             * @version 1.🌳1.0 - Enhanced with color picker and display toggles
              */
             const DOM = {
                 /** Element references */
@@ -937,10 +1440,12 @@
                 init: function() {
                     // Core elements
                     const ids = [
-                        'network-canvas', 'add-node-btn', 'export-json-btn', 'export-csv-btn',
-                        'node-name', 'node-content', 'update-node-btn', 'editor-title',
+                        'network-canvas', 'add-node-btn', 'export-json-btn', 'import-json-btn',
+                        'node-name', 'node-content', 'update-node-btn', 'remove-node-btn', 'editor-title',
                         'editor-subtitle', 'editor-placeholder', 'status', 'node-tooltip',
-                        'node-emoji-select', 'emoji-picker', 'emoji-grid', 'toggle-display-btn'
+                        'node-emoji-select', 'emoji-picker', 'emoji-grid', 'emoji-toggle', 'title-toggle',
+                        'node-color-select', 'color-picker', 'color-grid', 'custom-color',
+                        'import-file', 'remove-confirmation-modal', 'cancel-remove-btn', 'confirm-remove-btn'
                     ];
                     
                     // Populate elements object
@@ -955,8 +1460,9 @@
                     // Ensure canvas is properly sized
                     this.resizeCanvas();
                     
-                    // Initialize emoji picker
+                    // Initialize pickers
                     this.initEmojiPicker();
+                    this.initColorPicker();
                 },
                 
                 /**
@@ -1022,12 +1528,81 @@
                             
                             // Toggle visibility
                             picker.classList.toggle('active');
+                            
+                            // Hide color picker if open
+                            const colorPicker = this.elements['color-picker'];
+                            if (colorPicker) {
+                                colorPicker.classList.remove('active');
+                            }
+                        });
+                    }
+                },
+                
+                /**
+                 * Initialize color picker with palette and custom color option
+                 */
+                initColorPicker: function() {
+                    const grid = this.elements['color-grid'];
+                    const picker = this.elements['color-picker'];
+                    const customColor = this.elements['custom-color'];
+                    
+                    if (!grid || !picker) return;
+                    
+                    // Clear existing items
+                    grid.innerHTML = '';
+                    
+                    // Add color palette
+                    META.node.colors.forEach(color => {
+                        const item = document.createElement('div');
+                        item.className = 'color-item';
+                        item.style.backgroundColor = color;
+                        item.setAttribute('data-color', color);
+                        item.addEventListener('click', () => {
+                            if (State.ui.selectedNode) {
+                                // Update the color select button
+                                this.elements['node-color-select'].style.backgroundColor = color;
+                                
+                                // Update custom color input
+                                if (customColor) {
+                                    customColor.value = color;
+                                }
+                                
+                                // Hide the picker
+                                picker.classList.remove('active');
+                            }
                         });
                         
-                        // Close picker when clicking outside
-                        document.addEventListener('click', (e) => {
-                            if (!picker.contains(e.target) && e.target !== emojiSelect) {
-                                picker.classList.remove('active');
+                        grid.appendChild(item);
+                    });
+                    
+                    // Set up custom color input
+                    if (customColor) {
+                        customColor.addEventListener('input', (e) => {
+                            // Update color select when custom color changes
+                            const color = e.target.value;
+                            this.elements['node-color-select'].style.backgroundColor = color;
+                        });
+                    }
+                    
+                    // Set up color select button
+                    const colorSelect = this.elements['node-color-select'];
+                    
+                    if (colorSelect && picker) {
+                        colorSelect.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            
+                            // Position the picker near the button
+                            const rect = colorSelect.getBoundingClientRect();
+                            picker.style.top = `${rect.bottom + 5}px`;
+                            picker.style.left = `${rect.left}px`;
+                            
+                            // Toggle visibility
+                            picker.classList.toggle('active');
+                            
+                            // Hide emoji picker if open
+                            const emojiPicker = this.elements['emoji-picker'];
+                            if (emojiPicker) {
+                                emojiPicker.classList.remove('active');
                             }
                         });
                     }
@@ -1057,6 +1632,28 @@
                     }
                     
                     return false;
+                },
+                
+                /**
+                 * Show a confirmation modal
+                 * @param {string} modalId - ID of modal to show
+                 */
+                showModal: function(modalId) {
+                    const modal = this.elements[modalId];
+                    if (modal) {
+                        modal.classList.add('active');
+                    }
+                },
+                
+                /**
+                 * Hide a confirmation modal
+                 * @param {string} modalId - ID of modal to hide
+                 */
+                hideModal: function(modalId) {
+                    const modal = this.elements[modalId];
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
                 }
             };
             
@@ -1069,7 +1666,7 @@
              * 
              * Handles all updates to the user interface based on application state.
              * 
-             * @version 1.🌿1.1 - Updated for display mode toggle
+             * @version 1.🌳1.0 - Enhanced with color selection and display toggles
              */
             const UI = {
                 /**
@@ -1079,16 +1676,22 @@
                 updateEditor: function(node) {
                     const placeholderEl = DOM.elements['editor-placeholder'];
                     const emojiSelectEl = DOM.elements['node-emoji-select'];
+                    const colorSelectEl = DOM.elements['node-color-select'];
                     const nameEl = DOM.elements['node-name'];
                     const contentEl = DOM.elements['node-content'];
                     const titleEl = DOM.elements['editor-title'];
                     const subtitleEl = DOM.elements['editor-subtitle'];
                     const updateBtnEl = DOM.elements['update-node-btn'];
+                    const removeBtnEl = DOM.elements['remove-node-btn'];
                     const emojiPickerEl = DOM.elements['emoji-picker'];
+                    const colorPickerEl = DOM.elements['color-picker'];
                     
-                    // Hide emoji picker if open
+                    // Hide pickers if open
                     if (emojiPickerEl) {
                         emojiPickerEl.classList.remove('active');
+                    }
+                    if (colorPickerEl) {
+                        colorPickerEl.classList.remove('active');
                     }
                     
                     if (node) {
@@ -1097,12 +1700,20 @@
                         nameEl.style.display = 'block';
                         contentEl.style.display = 'block';
                         updateBtnEl.style.display = 'block';
+                        removeBtnEl.style.display = 'block';
                         emojiSelectEl.parentElement.parentElement.style.display = 'flex';
                         
                         // Set content
                         emojiSelectEl.textContent = node.emoji;
+                        colorSelectEl.style.backgroundColor = node.color || META.node.defaults.color;
                         nameEl.value = node.name || '';
                         contentEl.value = node.content || '';
+                        
+                        // Update custom color input if it exists
+                        const customColorEl = DOM.elements['custom-color'];
+                        if (customColorEl) {
+                            customColorEl.value = node.color || META.node.defaults.color;
+                        }
                         
                         // Update headings
                         titleEl.innerHTML = `<span class="node-emoji">${node.emoji}</span> Editing ${node.name || 'Untitled Node'}`;
@@ -1113,11 +1724,28 @@
                         nameEl.style.display = 'none';
                         contentEl.style.display = 'none';
                         updateBtnEl.style.display = 'none';
+                        removeBtnEl.style.display = 'none';
                         emojiSelectEl.parentElement.parentElement.style.display = 'none';
                         
                         // Update headings
                         titleEl.textContent = 'Node Editor';
                         subtitleEl.textContent = 'Select a node to edit its content';
+                    }
+                },
+                
+                /**
+                 * Update display toggle switches to match current state
+                 */
+                updateDisplayToggles: function() {
+                    const emojiToggle = DOM.elements['emoji-toggle'];
+                    const titleToggle = DOM.elements['title-toggle'];
+                    
+                    if (emojiToggle) {
+                        emojiToggle.checked = State.ui.display.showEmoji;
+                    }
+                    
+                    if (titleToggle) {
+                        titleToggle.checked = State.ui.display.showTitle;
                     }
                 },
                 
@@ -1131,11 +1759,22 @@
                     const tooltip = DOM.elements['node-tooltip'];
                     if (!tooltip) return;
                     
-                    // Set tooltip content based on display mode
-                    // In emoji mode, show name; in title mode, show emoji
-                    const content = State.ui.displayMode === 'emoji' ?
-                        (node.name || 'Untitled Node') :
-                        `${node.emoji} ${node.name || 'Untitled Node'}`;
+                    // Set tooltip content (adaptive based on what's already visible)
+                    let content = '';
+                    
+                    if (State.ui.display.showEmoji && State.ui.display.showTitle) {
+                        // Both visible, show content preview
+                        content = node.content ? node.content.substring(0, 30) + (node.content.length > 30 ? '...' : '') : 'No content';
+                    } else if (State.ui.display.showEmoji && !State.ui.display.showTitle) {
+                        // Only emoji visible, show name
+                        content = node.name || 'Untitled Node';
+                    } else if (!State.ui.display.showEmoji && State.ui.display.showTitle) {
+                        // Only title visible, show emoji
+                        content = node.emoji;
+                    } else {
+                        // Neither visible (shouldn't happen), show both
+                        content = `${node.emoji} ${node.name || 'Untitled Node'}`;
+                    }
                     
                     // Set tooltip content and position
                     tooltip.textContent = content;
@@ -1192,7 +1831,7 @@
              * Handles all drawing operations on the canvas, visualizing
              * the nodes and edges in the network.
              * 
-             * @version 1.🌿1.1 - Enhanced for display mode toggle and animations
+             * @version 1.🌳1.0 - Enhanced with color support and display modes
              */
             const Renderer = {
                 /**
@@ -1266,29 +1905,41 @@
                 drawNode: function(node, transitionProgress = null) {
                     const ctx = DOM.ctx;
                     const isSelected = node === State.ui.selectedNode;
-                    const displayMode = State.ui.displayMode;
                     
                     // Calculate center position
                     const centerX = node.x + node.size / 2;
                     const centerY = node.y + node.size / 2;
                     
+                    // Get current display mode
+                    const showEmoji = State.ui.display.showEmoji;
+                    const showTitle = State.ui.display.showTitle;
+                    
                     // Check if we're in transition
-                    const isTransitioning = State.ui.isTransitioning && transitionProgress !== null;
+                    const isTransitioning = State.ui.display.isTransitioning && transitionProgress !== null;
                     
                     if (isTransitioning) {
                         // Draw transition between display modes
-                        this.drawNodeTransition(node, transitionProgress);
-                    } else if (displayMode === 'emoji') {
-                        // Draw regular emoji mode node
-                        this.drawEmojiNode(node, centerX, centerY, isSelected);
+                        this.drawNodeTransition(node, centerX, centerY, isSelected, transitionProgress);
                     } else {
-                        // Draw title mode node
-                        this.drawTitleNode(node, centerX, centerY, isSelected);
+                        // Draw based on current display mode
+                        if (showEmoji && showTitle) {
+                            // Both emoji and title
+                            this.drawTitleNode(node, centerX, centerY, isSelected, true);
+                        } else if (showEmoji && !showTitle) {
+                            // Only emoji
+                            this.drawEmojiNode(node, centerX, centerY, isSelected);
+                        } else if (!showEmoji && showTitle) {
+                            // Only title
+                            this.drawTitleNode(node, centerX, centerY, isSelected, false);
+                        } else {
+                            // Fallback: minimal node (shouldn't happen in normal use)
+                            this.drawMinimalNode(node, centerX, centerY, isSelected);
+                        }
                     }
                 },
                 
                 /**
-                 * Draws node in emoji display mode
+                 * Draws node with emoji
                  * @param {Object} node - Node to draw
                  * @param {number} centerX - Center X position
                  * @param {number} centerY - Center Y position
@@ -1302,15 +1953,8 @@
                     ctx.beginPath();
                     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
                     
-                    // Fill with gradient
-                    const gradient = ctx.createRadialGradient(
-                        centerX, centerY, radius * 0.7,
-                        centerX, centerY, radius
-                    );
-                    gradient.addColorStop(0, '#ffffff');
-                    gradient.addColorStop(1, '#f0f0f0');
-                    
-                    ctx.fillStyle = gradient;
+                    // Fill with node color
+                    ctx.fillStyle = node.color || META.node.defaults.color;
                     ctx.fill();
                     
                     // Draw outline, thicker if selected
@@ -1325,7 +1969,8 @@
                     ctx.stroke();
                     
                     // Draw emoji in center
-                    ctx.font = `${node.size * 0.4}px Arial`;
+                    const emojiSize = node.size * META.node.display.emoji.size;
+                    ctx.font = `${emojiSize}px Arial`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillStyle = '#333';
@@ -1333,29 +1978,30 @@
                 },
                 
                 /**
-                 * Draws node in title display mode
+                 * Draws node with title (and optionally emoji)
                  * @param {Object} node - Node to draw
                  * @param {number} centerX - Center X position
                  * @param {number} centerY - Center Y position
                  * @param {boolean} isSelected - Whether node is selected
+                 * @param {boolean} showEmoji - Whether to include emoji
                  */
-                drawTitleNode: function(node, centerX, centerY, isSelected) {
+                drawTitleNode: function(node, centerX, centerY, isSelected, showEmoji) {
                     const ctx = DOM.ctx;
                     
                     // Calculate dimensions
-                    const height = node.size;
+                    const height = showEmoji ? node.size : node.size * 0.7;
                     const radius = height / 2;
                     
                     // Measure text
                     const fontSize = node.size * META.node.display.title.fontSize;
-                    ctx.font = `${fontSize}px Arial`;
+                    ctx.font = `${fontSize}px ${window.getComputedStyle(document.body).fontFamily}`;
                     const title = node.name || 'Untitled';
                     const textMetrics = ctx.measureText(title);
                     const textWidth = textMetrics.width;
                     
                     // Calculate width (minimum is the node size)
                     const padding = node.size * META.node.display.title.padding;
-                    const minWidth = node.size * META.node.display.title.minWidth;
+                    const minWidth = showEmoji ? node.size : node.size * 0.8;
                     const width = Math.max(minWidth, textWidth + padding * 2);
                     
                     // Calculate top-left corner position
@@ -1364,32 +2010,19 @@
                     
                     // Draw rounded rectangle
                     ctx.beginPath();
-                    // Start at top left, after the corner
                     ctx.moveTo(x + radius, y);
-                    // Top edge
                     ctx.lineTo(x + width - radius, y);
-                    // Top right corner
                     ctx.arcTo(x + width, y, x + width, y + radius, radius);
-                    // Right edge
                     ctx.lineTo(x + width, y + height - radius);
-                    // Bottom right corner
                     ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
-                    // Bottom edge
                     ctx.lineTo(x + radius, y + height);
-                    // Bottom left corner
                     ctx.arcTo(x, y + height, x, y + height - radius, radius);
-                    // Left edge
                     ctx.lineTo(x, y + radius);
-                    // Top left corner
                     ctx.arcTo(x, y, x + radius, y, radius);
                     ctx.closePath();
                     
-                    // Fill with gradient
-                    const gradient = ctx.createLinearGradient(x, y, x, y + height);
-                    gradient.addColorStop(0, '#ffffff');
-                    gradient.addColorStop(1, '#f0f0f0');
-                    
-                    ctx.fillStyle = gradient;
+                    // Fill with node color
+                    ctx.fillStyle = node.color || META.node.defaults.color;
                     ctx.fill();
                     
                     // Draw outline
@@ -1408,188 +2041,102 @@
                     ctx.textBaseline = 'middle';
                     ctx.fillText(title, centerX, centerY);
                     
-                    // Draw small emoji indicator in top left
-                    const emojiSize = node.size * 0.2;
-                    ctx.font = `${emojiSize}px Arial`;
-                    ctx.fillText(node.emoji, x + emojiSize, y + emojiSize);
+                    // Draw emoji if showing both
+                    if (showEmoji) {
+                        // Draw small emoji indicator in top left
+                        const emojiSize = node.size * 0.2;
+                        ctx.font = `${emojiSize}px Arial`;
+                        ctx.fillText(node.emoji, x + emojiSize, y + emojiSize);
+                    }
+                },
+                
+                /**
+                 * Draws a minimal node (fallback for when neither emoji nor title is shown)
+                 * @param {Object} node - Node to draw
+                 * @param {number} centerX - Center X position
+                 * @param {number} centerY - Center Y position
+                 * @param {boolean} isSelected - Whether node is selected
+                 */
+                drawMinimalNode: function(node, centerX, centerY, isSelected) {
+                    const ctx = DOM.ctx;
+                    const radius = node.size / 3; // Smaller than regular nodes
+                    
+                    // Draw node background circle
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    
+                    // Fill with node color or darker version to make it visible
+                    ctx.fillStyle = node.color || '#bbdefb'; // Make default more visible
+                    ctx.fill();
+                    
+                    // Draw outline, thicker if selected
+                    if (isSelected) {
+                        ctx.strokeStyle = META.node.selected.outlineColor;
+                        ctx.lineWidth = META.node.selected.outlineWidth;
+                    } else {
+                        ctx.strokeStyle = '#777777'; // Darker for visibility
+                        ctx.lineWidth = 1.5;
+                    }
+                    
+                    ctx.stroke();
                 },
                 
                 /**
                  * Draws node transitioning between display modes
                  * @param {Object} node - Node to draw
+                 * @param {number} centerX - Center X position
+                 * @param {number} centerY - Center Y position
+                 * @param {boolean} isSelected - Whether node is selected
                  * @param {number} progress - Transition progress (0-1)
                  */
-                drawNodeTransition: function(node, progress) {
+                drawNodeTransition: function(node, centerX, centerY, isSelected, progress) {
                     const ctx = DOM.ctx;
-                    const isSelected = node === State.ui.selectedNode;
                     
-                    // Calculate center position
-                    const centerX = node.x + node.size / 2;
-                    const centerY = node.y + node.size / 2;
+                    // Get current display state
+                    const showEmoji = State.ui.display.showEmoji;
+                    const showTitle = State.ui.display.showTitle;
                     
-                    // Determine which transition we're doing
-                    const fromMode = State.ui.transitionFromMode;
-                    const toMode = State.ui.displayMode;
-                    
-                    // Transition from emoji to title
-                    if (fromMode === 'emoji' && toMode === 'title') {
-                        // Calculate dimensions for start and end states
-                        const height = node.size;
-                        const radius = height / 2;
-                        
-                        // Measure text for final width
-                        const fontSize = node.size * META.node.display.title.fontSize;
-                        ctx.font = `${fontSize}px Arial`;
-                        const title = node.name || 'Untitled';
-                        const textMetrics = ctx.measureText(title);
-                        const textWidth = textMetrics.width;
-                        
-                        // Calculate start and end widths
-                        const padding = node.size * META.node.display.title.padding;
-                        const minWidth = node.size * META.node.display.title.minWidth;
-                        const startWidth = node.size;
-                        const endWidth = Math.max(minWidth, textWidth + padding * 2);
-                        
-                        // Interpolate current width based on progress
-                        const currentWidth = startWidth + (endWidth - startWidth) * progress;
-                        
-                        // Calculate top-left position
-                        const x = centerX - currentWidth / 2;
-                        const y = centerY - height / 2;
-                        
-                        // Draw rounded rectangle with current width
-                        ctx.beginPath();
-                        ctx.moveTo(x + radius, y);
-                        ctx.lineTo(x + currentWidth - radius, y);
-                        ctx.arcTo(x + currentWidth, y, x + currentWidth, y + radius, radius);
-                        ctx.lineTo(x + currentWidth, y + height - radius);
-                        ctx.arcTo(x + currentWidth, y + height, x + currentWidth - radius, y + height, radius);
-                        ctx.lineTo(x + radius, y + height);
-                        ctx.arcTo(x, y + height, x, y + height - radius, radius);
-                        ctx.lineTo(x, y + radius);
-                        ctx.arcTo(x, y, x + radius, y, radius);
-                        ctx.closePath();
-                        
-                        // Fill with gradient
-                        const gradient = ctx.createLinearGradient(x, y, x, y + height);
-                        gradient.addColorStop(0, '#ffffff');
-                        gradient.addColorStop(1, '#f0f0f0');
-                        
-                        ctx.fillStyle = gradient;
-                        ctx.fill();
-                        
-                        // Draw outline
-                        if (isSelected) {
-                            ctx.strokeStyle = META.node.selected.outlineColor;
-                            ctx.lineWidth = META.node.selected.outlineWidth;
-                        } else {
-                            ctx.strokeStyle = '#d9d9d9';
-                            ctx.lineWidth = 1;
-                        }
-                        ctx.stroke();
-                        
-                        // Cross-fade between emoji and title
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        
-                        // Fade out emoji
-                        ctx.globalAlpha = 1 - progress;
-                        ctx.font = `${node.size * 0.4}px Arial`;
-                        ctx.fillStyle = '#333';
-                        ctx.fillText(node.emoji, centerX, centerY);
-                        
-                        // Fade in title
+                    // Determine transition type based on current state
+                    if (showEmoji && showTitle) {
+                        // Transitioning to showing both
+                        // Draw title node with fading in emoji
                         ctx.globalAlpha = progress;
-                        ctx.font = `${fontSize}px Arial`;
-                        ctx.fillText(title, centerX, centerY);
-                        
-                        // Fade in emoji indicator
-                        const emojiSize = node.size * 0.2;
-                        ctx.font = `${emojiSize}px Arial`;
-                        ctx.fillText(node.emoji, x + emojiSize, y + emojiSize);
-                        
-                        // Reset alpha
+                        this.drawTitleNode(node, centerX, centerY, isSelected, true);
                         ctx.globalAlpha = 1;
-                    } 
-                    // Transition from title to emoji
-                    else if (fromMode === 'title' && toMode === 'emoji') {
-                        // Calculate dimensions for start and end states
-                        const height = node.size;
-                        const radius = height / 2;
                         
-                        // Measure text for start width
-                        const fontSize = node.size * META.node.display.title.fontSize;
-                        ctx.font = `${fontSize}px Arial`;
-                        const title = node.name || 'Untitled';
-                        const textMetrics = ctx.measureText(title);
-                        const textWidth = textMetrics.width;
-                        
-                        // Calculate start and end widths
-                        const padding = node.size * META.node.display.title.padding;
-                        const minWidth = node.size * META.node.display.title.minWidth;
-                        const startWidth = Math.max(minWidth, textWidth + padding * 2);
-                        const endWidth = node.size;
-                        
-                        // Interpolate current width based on progress
-                        const currentWidth = startWidth + (endWidth - startWidth) * progress;
-                        
-                        // Calculate top-left position
-                        const x = centerX - currentWidth / 2;
-                        const y = centerY - height / 2;
-                        
-                        // Draw rounded rectangle
-                        ctx.beginPath();
-                        ctx.moveTo(x + radius, y);
-                        ctx.lineTo(x + currentWidth - radius, y);
-                        ctx.arcTo(x + currentWidth, y, x + currentWidth, y + radius, radius);
-                        ctx.lineTo(x + currentWidth, y + height - radius);
-                        ctx.arcTo(x + currentWidth, y + height, x + currentWidth - radius, y + height, radius);
-                        ctx.lineTo(x + radius, y + height);
-                        ctx.arcTo(x, y + height, x, y + height - radius, radius);
-                        ctx.lineTo(x, y + radius);
-                        ctx.arcTo(x, y, x + radius, y, radius);
-                        ctx.closePath();
-                        
-                        // Fill with gradient
-                        const gradient = ctx.createLinearGradient(x, y, x, y + height);
-                        gradient.addColorStop(0, '#ffffff');
-                        gradient.addColorStop(1, '#f0f0f0');
-                        
-                        ctx.fillStyle = gradient;
-                        ctx.fill();
-                        
-                        // Draw outline
-                        if (isSelected) {
-                            ctx.strokeStyle = META.node.selected.outlineColor;
-                            ctx.lineWidth = META.node.selected.outlineWidth;
-                        } else {
-                            ctx.strokeStyle = '#d9d9d9';
-                            ctx.lineWidth = 1;
-                        }
-                        ctx.stroke();
-                        
-                        // Cross-fade between title and emoji
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        
-                        // Fade out title
+                        // Draw fading emoji node
                         ctx.globalAlpha = 1 - progress;
-                        ctx.font = `${fontSize}px Arial`;
-                        ctx.fillStyle = '#333';
-                        ctx.fillText(title, centerX, centerY);
-                        
-                        // Fade out emoji indicator
-                        const emojiSize = node.size * 0.2;
-                        ctx.font = `${emojiSize}px Arial`;
-                        ctx.fillText(node.emoji, x + emojiSize, y + emojiSize);
-                        
-                        // Fade in emoji
-                        ctx.globalAlpha = progress;
-                        ctx.font = `${node.size * 0.4}px Arial`;
-                        ctx.fillText(node.emoji, centerX, centerY);
-                        
-                        // Reset alpha
+                        if (!showTitle) {
+                            // Coming from emoji-only
+                            this.drawEmojiNode(node, centerX, centerY, isSelected);
+                        } else {
+                            // Coming from title-only
+                            this.drawTitleNode(node, centerX, centerY, isSelected, false);
+                        }
                         ctx.globalAlpha = 1;
+                    } else if (showEmoji && !showTitle) {
+                        // Transitioning to emoji-only
+                        ctx.globalAlpha = progress;
+                        this.drawEmojiNode(node, centerX, centerY, isSelected);
+                        ctx.globalAlpha = 1;
+                        
+                        // Fade out previous mode
+                        ctx.globalAlpha = 1 - progress;
+                        this.drawTitleNode(node, centerX, centerY, isSelected, !showEmoji);
+                        ctx.globalAlpha = 1;
+                    } else if (!showEmoji && showTitle) {
+                        // Transitioning to title-only
+                        ctx.globalAlpha = progress;
+                        this.drawTitleNode(node, centerX, centerY, isSelected, false);
+                        ctx.globalAlpha = 1;
+                        
+                        // Fade out previous mode
+                        ctx.globalAlpha = 1 - progress;
+                        this.drawEmojiNode(node, centerX, centerY, isSelected);
+                        ctx.globalAlpha = 1;
+                    } else {
+                        // This shouldn't happen in normal operation
+                        this.drawMinimalNode(node, centerX, centerY, isSelected);
                     }
                 }
             };
@@ -1604,7 +2151,7 @@
              * Handles all user interactions with the application,
              * including mouse events, keyboard input, and button clicks.
              * 
-             * @version 1.🌿1.1 - Added display mode toggle handler
+             * @version 1.🌳1.0 - Enhanced with display toggles, node removal, and import/export
              */
             const InputHandler = {
                 /**
@@ -1619,18 +2166,46 @@
                     
                     // Button events
                     DOM.elements['add-node-btn'].addEventListener('click', this.handleAddNode);
-                    DOM.elements['export-json-btn'].addEventListener('click', () => State.exportData('json'));
-                    DOM.elements['export-csv-btn'].addEventListener('click', () => State.exportData('csv'));
                     DOM.elements['update-node-btn'].addEventListener('click', this.handleUpdateNode);
-                    DOM.elements['toggle-display-btn'].addEventListener('click', this.handleToggleDisplay);
+                    DOM.elements['remove-node-btn'].addEventListener('click', this.handleRemoveNodePrompt);
+                    DOM.elements['export-json-btn'].addEventListener('click', () => State.exportData());
+                    DOM.elements['import-json-btn'].addEventListener('click', this.handleImportButtonClick);
                     
-                    // Initialize toggle button text
-                    const toggleBtn = DOM.elements['toggle-display-btn'];
-                    if (toggleBtn) {
-                        toggleBtn.textContent = (State.ui.displayMode === 'emoji') ? 
-                            META.templates.displayToggle.emoji : 
-                            META.templates.displayToggle.title;
-                    }
+                    // File import handling
+                    DOM.elements['import-file'].addEventListener('change', this.handleFileImport);
+                    
+                    // Display toggle events
+                    DOM.elements['emoji-toggle'].addEventListener('change', (e) => {
+                        State.toggleEmojiDisplay(e.target.checked);
+                    });
+                    
+                    DOM.elements['title-toggle'].addEventListener('change', (e) => {
+                        State.toggleTitleDisplay(e.target.checked);
+                    });
+                    
+                    // Removal confirmation modal events
+                    DOM.elements['cancel-remove-btn'].addEventListener('click', () => {
+                        DOM.hideModal('remove-confirmation-modal');
+                    });
+                    
+                    DOM.elements['confirm-remove-btn'].addEventListener('click', this.handleRemoveNode);
+                    
+                    // Document-level click handler to close pickers
+                    document.addEventListener('click', (e) => {
+                        // Close pickers when clicking outside
+                        const emojiPicker = DOM.elements['emoji-picker'];
+                        const colorPicker = DOM.elements['color-picker'];
+                        const emojiButton = DOM.elements['node-emoji-select'];
+                        const colorButton = DOM.elements['node-color-select'];
+                        
+                        if (emojiPicker && e.target !== emojiButton && !emojiPicker.contains(e.target)) {
+                            emojiPicker.classList.remove('active');
+                        }
+                        
+                        if (colorPicker && e.target !== colorButton && !colorPicker.contains(e.target)) {
+                            colorPicker.classList.remove('active');
+                        }
+                    });
                     
                     // Window resize event
                     window.addEventListener('resize', () => {
@@ -1758,22 +2333,35 @@
                     let y = centerY;
                     
                     if (State.ui.selectedNode) {
-                        x = State.ui.selectedNode.x + nodeSize * 2;
-                        y = State.ui.selectedNode.y;
+                        // Smart positioning based on display mode
+                        if (State.ui.display.showTitle) {
+                            // Vertical positioning for title mode (below parent)
+                            const verticalOffset = META.node.positioning.verticalOffset;
+                            const dimensions = State.calculateNodeDimensions(State.ui.selectedNode);
+                            
+                            x = State.ui.selectedNode.x;
+                            y = State.ui.selectedNode.y + dimensions.height + nodeSize * verticalOffset;
+                        } else {
+                            // Horizontal positioning for emoji mode (beside parent)
+                            const horizontalOffset = META.node.positioning.horizontalOffset;
+                            x = State.ui.selectedNode.x + nodeSize * horizontalOffset;
+                            y = State.ui.selectedNode.y;
+                        }
                         
                         // Create edge from selected to new node
                         const newNode = State.addNode({ x, y });
                         State.addEdge(State.ui.selectedNode.id, newNode.id);
                         State.selectNode(newNode);
                     } else {
-                        // Create node at center if no selection
-                        const newNode = State.addNode({ 
+                        // Create welcome node at center if no selection
+                        const welcomeNode = State.addNode({ 
                             x, y, 
                             emoji: META.templates.welcome.emoji,
                             name: META.templates.welcome.name,
-                            content: META.templates.welcome.content
+                            content: META.templates.welcome.content,
+                            color: META.templates.welcome.color
                         });
-                        State.selectNode(newNode);
+                        State.selectNode(welcomeNode);
                     }
                     
                     Renderer.draw();
@@ -1788,12 +2376,14 @@
                     
                     // Get values from editor
                     const emojiEl = DOM.elements['node-emoji-select'];
+                    const colorEl = DOM.elements['node-color-select'];
                     const nameEl = DOM.elements['node-name'];
                     const contentEl = DOM.elements['node-content'];
                     
                     // Update node
                     State.updateNode(State.ui.selectedNode.id, {
                         emoji: emojiEl.textContent,
+                        color: colorEl.style.backgroundColor,
                         name: nameEl.value,
                         content: contentEl.value
                     });
@@ -1804,71 +2394,126 @@
                 },
                 
                 /**
-                 * Handles toggling the display mode
+                 * Shows node removal confirmation prompt
                  */
-                handleToggleDisplay: function() {
-                    // If transitioning, ignore clicks
-                    if (State.ui.isTransitioning) return;
+                handleRemoveNodePrompt: function() {
+                    if (!State.ui.selectedNode) return;
                     
-                    // Toggle display mode
-                    State.toggleDisplayMode();
+                    // Show confirmation modal
+                    DOM.showModal('remove-confirmation-modal');
+                },
+                
+                /**
+                 * Handles removing a node after confirmation
+                 */
+                handleRemoveNode: function() {
+                    if (!State.ui.selectedNode) return;
+                    
+                    // Get node name for status update
+                    const nodeName = State.ui.selectedNode.name || 'Untitled Node';
+                    
+                    // Remove the node
+                    State.removeNode(State.ui.selectedNode.id);
+                    
+                    // Hide the confirmation modal
+                    DOM.hideModal('remove-confirmation-modal');
+                    
+                    // Update status
+                    UI.updateStatus(META.templates.status.removed(nodeName));
+                },
+                
+                /**
+                 * Handles clicking the import button
+                 */
+                handleImportButtonClick: function() {
+                    // Trigger file input click
+                    DOM.elements['import-file'].click();
+                },
+                
+                /**
+                 * Handles file import
+                 * @param {Event} e - Change event
+                 */
+                handleFileImport: function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    // Check file type
+                    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+                        UI.updateStatus('Error: Please select a JSON file', 5000);
+                        return;
+                    }
+                    
+                    // Import data from file
+                    State.importData(file);
+                    
+                    // Reset file input
+                    e.target.value = '';
                 }
             };
             
             // =====================================================================
-            // EXPORT: Data Export Functionality
+            // TRANSFER MANAGER: Import and Export Functionality
             // =====================================================================
 
             /**
-             * ExportManager: Data export system
+             * TransferManager: Data import and export system
              * 
-             * Handles exporting graph data to different formats.
+             * Handles transferring graph data in and out of the application.
              * 
-             * @version 1.🌿1.1 - Maintained from previous version
+             * @version 1.🌳1.0 - Enhanced with JSON import functionality
              */
-            const ExportManager = {
+            const TransferManager = {
                 /**
                  * Exports graph to JSON
                  */
-                toJson: function() {
+                exportJson: function() {
                     // Create a copy of the graph data
                     const graphData = JSON.stringify(State.graph, null, 2);
                     
                     // Download as file
-                    this.downloadFile(graphData, 'nodepad.json', META.export.formats.json.contentType);
+                    this.downloadFile(
+                        graphData, 
+                        META.dataTransfer.formats.json.filename, 
+                        META.dataTransfer.formats.json.contentType
+                    );
                     UI.updateStatus(META.templates.status.exported('JSON'));
                 },
                 
                 /**
-                 * Exports graph to CSV files
+                 * Imports graph from JSON file
+                 * @param {File} file - JSON file to import
                  */
-                toCsv: function() {
-                    // Create nodes CSV
-                    const nodeHeader = 'id,emoji,name,content,x,y,size\n';
-                    const nodeRows = State.graph.nodes.map(node => {
-                        // Escape content for CSV
-                        const escapedContent = `"${node.content.replace(/"/g, '""')}"`;
-                        const escapedName = `"${(node.name || '').replace(/"/g, '""')}"`;
-                        const escapedEmoji = `"${node.emoji}"`;
-                        
-                        return `${node.id},${escapedEmoji},${escapedName},${escapedContent},${node.x},${node.y},${node.size}`;
-                    }).join('\n');
+                importJson: function(file) {
+                    const reader = new FileReader();
                     
-                    const nodesCSV = nodeHeader + nodeRows;
+                    reader.onload = function(e) {
+                        try {
+                            // Parse JSON data
+                            const jsonData = JSON.parse(e.target.result);
+                            
+                            // Validate data structure
+                            if (!jsonData.nodes || !Array.isArray(jsonData.nodes) ||
+                                !jsonData.edges || !Array.isArray(jsonData.edges)) {
+                                throw new Error('Invalid JSON format: Missing nodes or edges arrays');
+                            }
+                            
+                            // Reset application state with new data
+                            State.reset(jsonData);
+                            
+                            // Update status
+                            UI.updateStatus(META.templates.status.imported(`${jsonData.nodes.length} nodes, ${jsonData.edges.length} edges`));
+                        } catch (error) {
+                            Debug.error('Import error:', error);
+                            UI.updateStatus(`Error: ${error.message}`, 5000);
+                        }
+                    };
                     
-                    // Create edges CSV
-                    const edgeHeader = 'id,sourceId,targetId\n';
-                    const edgeRows = State.graph.edges.map(edge => {
-                        return `${edge.id},${edge.sourceId},${edge.targetId}`;
-                    }).join('\n');
+                    reader.onerror = function() {
+                        UI.updateStatus('Error: Failed to read file', 5000);
+                    };
                     
-                    const edgesCSV = edgeHeader + edgeRows;
-                    
-                    // Download both files
-                    this.downloadFile(nodesCSV, META.export.formats.nodeCsv.filename, META.export.formats.nodeCsv.contentType);
-                    this.downloadFile(edgesCSV, META.export.formats.edgeCsv.filename, META.export.formats.edgeCsv.contentType);
-                    
-                    UI.updateStatus(META.templates.status.exported('CSV'));
+                    reader.readAsText(file);
                 },
                 
                 /**
@@ -1902,7 +2547,7 @@
              * 
              * Provides consistent debugging output and error handling.
              * 
-             * @version 1.🌿1.1 - Maintained from previous version
+             * @version 1.🌳1.0 - Maintained from previous version
              */
             const Debug = {
                 /**
@@ -1949,7 +2594,7 @@
              * 
              * Handles the initialization and startup of the application.
              * 
-             * @version 1.🌿1.1 - Enhanced with feature detection
+             * @version 1.🌳1.0 - Enhanced with independent display controls
              */
             const App = {
                 /**
@@ -1961,6 +2606,9 @@
                     
                     // Set up event handlers
                     InputHandler.init();
+                    
+                    // Set display toggles to match state
+                    UI.updateDisplayToggles();
                     
                     // Create initial node if no nodes exist
                     if (State.graph.nodes.length === 0) {
@@ -1996,9 +2644,8 @@
                         }
                     });
                     
-                    // If some emojis aren't supported, we could replace them with fallbacks
+                    // If some emojis aren't supported, warn in debug
                     if (hasUnsupportedEmojis) {
-                        // Just log a warning for now
                         Debug.log('Some emojis are not supported in this browser - consider using fallbacks', 'warn');
                     }
                 }
